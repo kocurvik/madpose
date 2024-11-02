@@ -54,11 +54,5 @@ list(REMOVE_ITEM COLMAP_LIBRARIES colmap_cuda sift_gpu)
 message("COLMAP_LIBRARIES:${COLMAP_LIBRARIES}")
 message("COLMAP_EXPORT_LIBS:${COLMAP_EXPORT_LIBS}")
 link_directories(${COLMAP_LINK_DIRS})
-pybind11_add_module(acmpose
-                    bindings.cpp solver.cpp scale_offset_estimator.cpp
-                    point_cloud_pose_estimator.cpp
-                    pose_scale_shift_estimator.cpp 
-                    hybrid_pose_estimator.cpp
-                    hybrid_pose_shared_focal_estimator.cpp
-                    hybrid_pose_two_focal_estimator.cpp)
-target_link_libraries(acmpose PRIVATE Eigen3::Eigen PoseLib::PoseLib Ceres::ceres colmap::colmap ${OpenCV_LIBS})
+
+add_subdirectory(src)
