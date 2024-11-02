@@ -246,7 +246,7 @@ void HybridPoseTwoFocalEstimator::LeastSquares(const std::vector<std::vector<int
 }
 
 int HybridPoseTwoFocalEstimator3::NonMinimalSolver(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffsetTwoFocal* solution) const {
-    if (sample[0].size() < 4 && sample[1].size() < 4 && sample[2].size() < 7) {
+    if (sample[0].size() < 4 || sample[1].size() < 4 || sample[2].size() < 7) {
         return 0;
     } 
 
@@ -306,7 +306,7 @@ double HybridPoseTwoFocalEstimator3::EvaluateModelOnPoint(const PoseScaleOffsetT
 
 // Linear least squares solver. 
 void HybridPoseTwoFocalEstimator3::LeastSquares(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffsetTwoFocal* model, bool final) const {
-    if (sample[0].size() < 4 && sample[1].size() < 4 && sample[2].size() < 7) {
+    if (sample[0].size() < 4 || sample[1].size() < 4 || sample[2].size() < 7) {
         return;
     }
 

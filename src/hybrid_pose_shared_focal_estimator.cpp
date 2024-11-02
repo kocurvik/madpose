@@ -134,7 +134,7 @@ int HybridPoseSharedFocalEstimator::MinimalSolver(
 }
 
 int HybridPoseSharedFocalEstimator::NonMinimalSolver(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffsetSharedFocal* solution) const {
-    if (sample[0].size() < 4 && sample[1].size() < 6) return 0;
+    if (sample[0].size() < 4 || sample[1].size() < 6) return 0;
     return 0;
 
     // SharedFocalOptimizerConfig config;
@@ -185,7 +185,7 @@ double HybridPoseSharedFocalEstimator::EvaluateModelOnPoint(const PoseScaleOffse
 
 // Linear least squares solver. 
 void HybridPoseSharedFocalEstimator::LeastSquares(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffsetSharedFocal* model, bool final) const {
-    if (sample[0].size() < 4 && sample[1].size() < 6) {
+    if (sample[0].size() < 4 || sample[1].size() < 6) {
         return;
     }
     return;
@@ -202,7 +202,7 @@ void HybridPoseSharedFocalEstimator::LeastSquares(const std::vector<std::vector<
 }
 
 int HybridPoseSharedFocalEstimator3::NonMinimalSolver(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffsetSharedFocal* solution) const {
-    if (sample[0].size() < 4 && sample[1].size() < 4 && sample[2].size() < 6) {
+    if (sample[0].size() < 4 || sample[1].size() < 4 || sample[2].size() < 6) {
         return 0;
     }
     SharedFocalOptimizerConfig config;
@@ -260,7 +260,7 @@ double HybridPoseSharedFocalEstimator3::EvaluateModelOnPoint(const PoseScaleOffs
 
 // Linear least squares solver. 
 void HybridPoseSharedFocalEstimator3::LeastSquares(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffsetSharedFocal* model, bool final) const {
-    if (sample[0].size() < 4 && sample[1].size() < 4 && sample[2].size() < 6) {
+    if (sample[0].size() < 4 || sample[1].size() < 4 || sample[2].size() < 6) {
         return;
     }
 
