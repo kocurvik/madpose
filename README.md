@@ -55,7 +55,7 @@ Our codebase is inspired by and built upon many research work and opensource pro
 - [pybind11](https://github.com/pybind/pybind11)
 
 ## Citation
-If you find our work useful in your research, please consider consider citing our paper:
+If you find our work useful in your research, please consider citing our paper:
 ```
 @misc{}
 ```
