@@ -4,11 +4,11 @@
 
 This repo contains the official implementation of the solvers and estimators proposed in the paper "Relative Pose Estimation through Affine Corrections of Monocular Depth Priors". The solvers and estimators are implemented using C++, and we provide easy-to-use Python bindings. 
 
-Note: "**MAD**" in the name is an acronym for "**M**onocular **A**ffine **D**epth".
+Note: "**MAD**" is an acronym for "**M**onocular **A**ffine **D**epth".
 
 ## Installation
 ### Install from PyPI
-We are working on to setup wheel for easy installation using PyPI. Currently please use the following method to install from source.
+We are working on setting up wheel for easy installation using PyPI. Currently please use the following method to install from source.
 
 ### Install from source
 #### Install dependencies
