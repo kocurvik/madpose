@@ -14,7 +14,7 @@
 #include <RansacLib/utils.h>
 
 using namespace ransac_lib;
-namespace acmpose {
+namespace madpose {
 
 class ExtendedHybridLORansacOptions : public ransac_lib::HybridLORansacOptions {
  public:
@@ -25,11 +25,11 @@ class ExtendedHybridLORansacOptions : public ransac_lib::HybridLORansacOptions {
   int non_min_sample_multiplier_;
 };
 
-// Our customized RANSAC based on HybridLocallyOptimizedMSAC from RansacLib
+// Our customized hybrid-RANSAC based on HybridLocallyOptimizedMSAC from RansacLib
 // [LINK] https://github.com/tsattler/RansacLib/blob/master/RansacLib/hybrid_ransac.h
 template <class Model, class ModelVector, class HybridSolver,
           class Sampler = HybridUniformSampling<HybridSolver> >
-class HybridUncertaintyLOMSAC : public HybridRansacBase {
+class HybridLOMSAC : public HybridRansacBase {
  public:
   // Estimates a model using a given solver. Notice that the solver contains
   // all data and is responsible to implement a non-minimal solver and
@@ -202,7 +202,7 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
 
     if (options.final_least_squares_) {
       Model refined_model = *best_model;
-      solver.LeastSquares(stats.inlier_indices, stats.best_solver_type, &refined_model, true);
+      solver.LeastSquares(stats.inlier_indices, stats.best_solver_type, &refined_model);
 
       double score = std::numeric_limits<double>::max();
       ScoreModel(options, solver, refined_model, kSqrInlierThresh,
@@ -243,36 +243,9 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
     const double kSumInlierRatios = std::accumulate(
         stats.inlier_ratios.begin(), stats.inlier_ratios.end(), 0.0);
 
-    // if (kSumInlierRatios == 0.0) {
-    if (true) {
-      for (int i = 0; i < kNumSolvers; ++i) {
-        probabilities[i] = prior_probabilities[i];
-        sum_probabilities += probabilities[i];
-      }
-    } else {
-      for (int i = 0; i < kNumSolvers; ++i) {
-        double num_iters =
-            static_cast<double>(stats.num_iterations_per_solver[i]);
-        if (num_iters > 0.0) {
-          num_iters -= 1.0;
-        }
-
-        double all_inlier_prob = 1.0;
-        for (int j = 0; j < kNumDataTypes; ++j) {
-          all_inlier_prob *=
-              std::pow(stats.inlier_ratios[j],
-                       static_cast<double>(min_sample_sizes[i][j]));
-        }
-
-        if (num_iters < static_cast<double>(min_num_iterations)) {
-          probabilities[i] = all_inlier_prob * prior_probabilities[i];
-        } else {
-          probabilities[i] = all_inlier_prob *
-                             std::pow(1.0 - all_inlier_prob, num_iters) *
-                             prior_probabilities[i];
-        }
-        sum_probabilities += probabilities[i];
-      }
+    for (int i = 0; i < kNumSolvers; ++i) {
+      probabilities[i] = prior_probabilities[i];
+      sum_probabilities += probabilities[i];
     }
 
     std::uniform_real_distribution<double> dist(0.0, sum_probabilities);
@@ -323,9 +296,9 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
     for (int t = 0; t < num_data_types; ++t) {
       if (kSolverType >= 0 && min_sample_sizes[kSolverType][t] == 0) continue;
       for (int i = 0; i < num_data[t]; ++i) {
-        double squared_error = solver.EvaluateModelOnPoint(model, t, i, squared_inlier_thresholds[t]);
+        double squared_error = solver.EvaluateModelOnPoint(model, t, i);
         *score += ComputeScore(squared_error, squared_inlier_thresholds[t]) *
-                  options.data_type_weights_[t] * solver.GetWeight(i);
+                  options.data_type_weights_[t];
       }
     }
   }
@@ -356,7 +329,7 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
           (*inliers)[t].clear();
         }
         for (int i = 0; i < num_data[t]; ++i) {
-          double squared_error = solver.EvaluateModelOnPoint(model, t, i, squared_inlier_thresholds[t]);
+          double squared_error = solver.EvaluateModelOnPoint(model, t, i, true);
           if (squared_error < squared_inlier_thresholds[t]) {
             ++num_inliers;
             if (inliers != nullptr) (*inliers)[t].push_back(i);
@@ -376,7 +349,7 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
       for (int i = 0; i < num_data[0]; ++i) {
         bool is_common_inlier = true;
         for (int t = 0; t < kNumDataTypes; ++t) {
-          double squared_error = solver.EvaluateModelOnPoint(model, t, i, squared_inlier_thresholds[t]);
+          double squared_error = solver.EvaluateModelOnPoint(model, t, i);
           if (squared_error >= squared_inlier_thresholds[t]) {
             is_common_inlier = false;
             break;
@@ -506,22 +479,6 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
         sample[t].push_back(idx);
       }
 
-      // std::vector<std::vector<int>> sample = inliers_base;
-      // // int non_min_sample_size = 0;
-      // // for (int i = 0; i < kNumDataTypes; ++i) {
-      // //   non_min_sample_size = std::max(non_min_sample_size, min_sample_sizes[solver_type][i]);
-      // // }
-      // // utils::RandomShuffleAndResize(non_min_sample_size * options.non_min_sample_multiplier_, rng, &sample[0]);
-      // // for (int i = 1; i < kNumDataTypes; ++i) {
-      // //   sample[i] = sample[0];
-      // // }
-      // for (int i = 0; i < kNumDataTypes; ++i) {
-      //   if (min_sample_sizes[solver_type][i] > 0) {
-      //     utils::RandomShuffleAndResize(
-      //       min_sample_sizes[solver_type][i] * options.non_min_sample_multiplier_, rng, &sample[i]);
-      //   }
-      // }
-
       Model m_non_min = m_init; // modified here
       if (!solver.NonMinimalSolver(sample, solver_type, &m_non_min)) continue;
 
@@ -566,9 +523,6 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
     solver.num_data(&num_data);
 
     std::vector<std::vector<int>> inliers;
-    // for (int i = 0; i < sample_sizes.size(); i++) {
-    //   int num_inliers = GetInliers(solver, *model, thresholds, &inliers, i, true);
-    // }
     int num_inliers = GetInliers(solver, *model, thresholds, &inliers);
 
     const int kNumDataTypes = solver.num_data_types();
@@ -586,11 +540,6 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
     }
 
     if (use_all_solver_inliers) {
-      // for (int i = 0; i < kNumDataTypes; ++i) {
-      //   if (sample_sizes[solver_type][i] > 0)
-      //     sample_sizes[solver_type][i] = inliers[i].size();
-      // }
-      // utils::RandomShuffleAndResize(sample_sizes[solver_type], rng, &inliers);
       solver.LeastSquares(inliers, solver_type, model);
     } 
     else {
@@ -620,43 +569,6 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
       }
       solver.LeastSquares(sample, solver_type, model);
     }
-
-    // if (use_all_solver_inliers) {
-    //   inliers.clear();
-    //   GetInliers(solver, *model, thresholds, &inliers, -1, true);
-    //   if (solver_type == 0) {
-    //     inliers[2] = inliers[0];
-    //   }
-    //   // for (int i = 0; i < kNumDataTypes; ++i) {
-    //   //   if (sample_sizes[solver_type][i] > 0)
-    //   //     sample_sizes[solver_type][i] = inliers[i].size();
-    //   // }
-    //   // utils::RandomShuffleAndResize(sample_sizes[solver_type], rng, &inliers);
-    //   solver.LeastSquares(inliers, solver_type, model);
-    // } 
-    // else {
-    //   int num_sample = 0;
-    //   for (int i = 0; i < kNumDataTypes; ++i) {
-    //     num_sample = std::max(num_sample, sample_sizes[solver_type][i]);
-    //   }
-    //   if (false) {
-    //     utils::RandomShuffleAndResize(
-    //           num_sample * options.non_min_sample_multiplier_, rng, &inliers[0]);
-    //     for (int i = 1; i < kNumDataTypes; ++i) {
-    //       inliers[i] = inliers[0];
-    //     }
-    //   }
-    //   else {
-    //     for (int i = 0; i < inliers.size(); i++) {
-    //       // if (sample_sizes[solver_type][i] > 0) {
-    //         utils::RandomShuffleAndResize(
-    //           num_sample * options.non_min_sample_multiplier_, rng, &inliers[i]);
-    //       // }
-    //     }
-    //     inliers[1] = inliers[0];
-    //   }
-    //   solver.LeastSquares(inliers, solver_type, model);
-    // }
   }
 
   inline void UpdateBestModel(const double score_curr, const Model& m_curr,
@@ -703,6 +615,6 @@ class HybridUncertaintyLOMSAC : public HybridRansacBase {
   }
 };
 
-}  // namespace acmpose
+}  // namespace madpose
 
 #endif  // HYBRID_RANSAC_H

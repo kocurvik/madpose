@@ -3,12 +3,11 @@
 
 #include <colmap/util/types.h>
 #include <PoseLib/solvers/p3p.h>
-#include <PoseLib/misc/re3q3.h>
 
 #include "pose.h"
 #include "utils.h"
 
-namespace acmpose {
+namespace madpose {
 
 PoseAndScale estimate_scale_and_pose(const Eigen::MatrixXd &X, const Eigen::MatrixXd &Y, const Eigen::VectorXd &W);
 
@@ -55,6 +54,6 @@ std::vector<PoseScaleOffsetTwoFocal> estimate_scale_shift_pose_two_focal_wrapper
     const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
     const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y);
 
-} // namespace acmpose
+} // namespace madpose
 
 #endif 
