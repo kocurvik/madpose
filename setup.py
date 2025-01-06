@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from setuptools import Extension, setup
+from setuptools import Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
 
 # Convert distutils Windows platform specifiers to CMake -A arguments
@@ -121,8 +121,9 @@ setup(
     version="0.0.1",
     author="Yifan Yu",
     author_email="markyu98@outlook.com",
-    description='''Solvers and estimators described in the paper "Relative pose estimation through affine correction of monocular depth priors".''',
+    description='''Solvers and estimators described in the paper "Relative Pose Estimation through Affine Corrections of Monocular Depth Priors".''',
     long_description="",
+    packages=find_packages(),
     ext_modules=[CMakeExtension("madpose")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
