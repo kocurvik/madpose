@@ -1,5 +1,4 @@
-#ifndef COST_FUNCTIONS_H
-#define COST_FUNCTIONS_H
+#pragma once
 
 #include "utils.h"
 #include "pose.h"
@@ -344,5 +343,3 @@ private:
 };
 
 } // namespace madpose
-
-#endif // COST_FUNCTIONS_H

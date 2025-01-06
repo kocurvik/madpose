@@ -1,5 +1,4 @@
-#ifndef HYBRID_POSE_SHARED_FOCAL_ESTIMATION_H
-#define HYBRID_POSE_SHARED_FOCAL_ESTIMATION_H
+#pragma once
 
 #include <RansacLib/ransac.h>
 #include "optimizer.h"
@@ -102,5 +101,3 @@ HybridEstimatePoseScaleOffsetSharedFocal(const std::vector<Eigen::Vector2d> &x0_
                               const EstimatorConfig &est_config = EstimatorConfig());
 
 } // namespace madpose
-
-#endif // HYBRID_POSE_SHARED_FOCAL_ESTIMATION_H

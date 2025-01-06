@@ -1,5 +1,4 @@
-#ifndef HYBRID_POSE_TWO_FOCAL_ESTIMATION_H
-#define HYBRID_POSE_TWO_FOCAL_ESTIMATION_H
+#pragma once
 
 #include <RansacLib/ransac.h>
 #include "optimizer.h"
@@ -138,5 +137,3 @@ HybridEstimatePoseScaleOffsetTwoFocal(const std::vector<Eigen::Vector2d> &x0_nor
                               const EstimatorConfig &estimator_config = EstimatorConfig());
 
 } // namespace madpose
-
-#endif // HYBRID_POSE_TWO_FOCAL_ESTIMATION_H

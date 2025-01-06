@@ -1,5 +1,4 @@
-#ifndef OPTIMIZER_CONFIG_H
-#define OPTIMIZER_CONFIG_H
+#pragma once
 
 #include "utils.h"
 
@@ -59,5 +58,3 @@ public:
 typedef SharedFocalOptimizerConfig TwoFocalOptimizerConfig;
 
 } // namespace madpose
-
-#endif // OPTIMIZER_CONFIG_H

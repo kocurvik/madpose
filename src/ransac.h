@@ -1,5 +1,4 @@
-#ifndef RANSAC_H
-#define RANSAC_H
+#pragma once
 
 #include <algorithm>
 #include <cmath>
@@ -334,5 +333,3 @@ class LocallyOptimizedMSAC : public RansacBase {
 };
 
 }  // namespace madpose
-
-#endif  // RANSAC_H

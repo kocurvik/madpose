@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include <pybind11/pybind11.h>
 #include <colmap/util/threading.h>
@@ -89,5 +88,3 @@ inline void AssignSolverOptionsFromDict(ceres::Solver::Options& solver_options, 
 }
 
 } // namespace madpose
-
-#endif // UTILS_H

@@ -1,5 +1,4 @@
-#ifndef ESTIMATOR_CONFIG_H
-#define ESTIMATOR_CONFIG_H
+#pragma once
 
 namespace madpose {
 
@@ -31,5 +30,3 @@ public:
 };
 
 } // namespace madpose
-
-#endif // ESTIMATOR_CONFIG_H

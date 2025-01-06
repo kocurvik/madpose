@@ -1,5 +1,4 @@
-#ifndef POSE_SCALE_SHIFT_ESTIMATOR_H
-#define POSE_SCALE_SHIFT_ESTIMATOR_H
+#pragma once
 
 #include <RansacLib/ransac.h>
 #include "optimizer.h"
@@ -62,5 +61,3 @@ EstimatePoseScaleOffset(const std::vector<Eigen::Vector2d> &x0, const std::vecto
                         const ransac_lib::LORansacOptions& options);
 
 } // namespace madpose
-
-#endif // POSE_SCALE_SHIFT_ESTIMATOR_H

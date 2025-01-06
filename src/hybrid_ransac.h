@@ -1,5 +1,4 @@
-#ifndef HYBRID_RANSAC_H
-#define HYBRID_RANSAC_H
+#pragma once
 
 #include <algorithm>
 #include <cmath>
@@ -616,5 +615,3 @@ class HybridLOMSAC : public HybridRansacBase {
 };
 
 }  // namespace madpose
-
-#endif  // HYBRID_RANSAC_H

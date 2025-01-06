@@ -1,5 +1,4 @@
-#ifndef SOLVER_H
-#define SOLVER_H
+#pragma once
 
 #include <colmap/util/types.h>
 #include <PoseLib/solvers/p3p.h>
@@ -55,5 +54,3 @@ std::vector<PoseScaleOffsetTwoFocal> estimate_scale_shift_pose_two_focal_wrapper
     const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y);
 
 } // namespace madpose
-
-#endif 

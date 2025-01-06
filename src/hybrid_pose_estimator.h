@@ -1,5 +1,4 @@
-#ifndef HYBRID_POSE_ESTIMATION_H
-#define HYBRID_POSE_ESTIMATION_H
+#pragma once
 
 #include <RansacLib/ransac.h>
 #include "hybrid_ransac.h"
@@ -193,5 +192,3 @@ HybridEstimatePoseAndScale(const std::vector<Eigen::Vector2d> &x0, const std::ve
                            const EstimatorConfig &est_config = EstimatorConfig());
 
 } // namespace madpose
-
-#endif // HYBRID_POSE_ESTIMATION_H

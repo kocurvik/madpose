@@ -1,5 +1,4 @@
-#ifndef OPTIMIZER_H
-#define OPTIMIZER_H
+#pragma once
 
 #include "pose.h"
 #include "optimizer_config.h"
@@ -514,6 +513,3 @@ public:
 };
 
 } // namespace madpose
-
-#endif // OPTIMIZER_H
-

@@ -1,5 +1,4 @@
-#ifndef POSE_H
-#define POSE_H
+#pragma once
 
 #include <Eigen/Core>
 
@@ -54,5 +53,3 @@ struct PoseScaleOffsetTwoFocal : public PoseScaleOffset {
 };
 
 } // namespace madpose
-
-#endif // POSE_H
