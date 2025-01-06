@@ -8,7 +8,7 @@ if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.1)
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -std=c++17 -std=gnu++17 -fPIC") # brute-force approach to make sure we are using C++17
 
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 3.4 REQUIRED)
 find_package(COLMAP REQUIRED)
 message(STATUS "Found COLMAP: ${COLMAP_DIR}")
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
