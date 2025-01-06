@@ -15,7 +15,7 @@ We are working on setting up wheel for easy installation using PyPI. Currently p
 ```bash
 sudo apt-get install libeigen3-dev libceres-dev libopencv-dev
 ```
-_Note: The two-focal estimators currently rely on `cv::recoverPose` from OpenCV, we plan to remove dependency on OpenCV in future updates._
+_Note: The two-focal estimator currently relies on `cv::recoverPose` from OpenCV, we plan to remove dependency on OpenCV in future updates._
 
 #### Clone the repo
 ```bash
