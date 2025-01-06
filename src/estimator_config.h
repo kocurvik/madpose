@@ -2,14 +2,10 @@
 
 namespace madpose {
 
-enum class EstimatorOption {
-    HYBRID = 0,
-    EPI_ONLY = 1,
-    MD_ONLY = 2
-};
+enum class EstimatorOption { HYBRID = 0, EPI_ONLY = 1, MD_ONLY = 2 };
 
 class EstimatorConfig {
-public:
+  public:
     EstimatorConfig() {
         solver_type = EstimatorOption::HYBRID;
         score_type = EstimatorOption::HYBRID;

@@ -1,31 +1,32 @@
+#include "hybrid_pose_estimator.h"
+
 #include <PoseLib/poselib.h>
 #include <PoseLib/solvers/relpose_5pt.h>
-#include "hybrid_pose_estimator.h"
 
 namespace madpose {
 
-std::pair<PoseScaleOffset, ransac_lib::HybridRansacStatistics> 
+std::pair<PoseScaleOffset, ransac_lib::HybridRansacStatistics>
 HybridEstimatePoseScaleOffset(const std::vector<Eigen::Vector2d> &x0, const std::vector<Eigen::Vector2d> &x1,
-                              const std::vector<double> &depth0, const std::vector<double> &depth1, 
-                              const Eigen::Vector2d &min_depth, 
-                              const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1,
-                              const ExtendedHybridLORansacOptions& options,
-                              const EstimatorConfig &est_config) {
+                              const std::vector<double> &depth0, const std::vector<double> &depth1,
+                              const Eigen::Vector2d &min_depth, const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1,
+                              const ExtendedHybridLORansacOptions &options, const EstimatorConfig &est_config) {
     ExtendedHybridLORansacOptions ransac_options(options);
-    
+
     std::random_device rand_dev;
     ransac_options.random_seed_ = 0;
 
     // Change to "three data types"
-    ransac_options.data_type_weights_[1] *= 2 * ransac_options.squared_inlier_thresholds_[0] / ransac_options.squared_inlier_thresholds_[1];
+    ransac_options.data_type_weights_[1] *=
+        2 * ransac_options.squared_inlier_thresholds_[0] / ransac_options.squared_inlier_thresholds_[1];
     double sampson_squared_weight = ransac_options.data_type_weights_[1];
-    
+
     ransac_options.data_type_weights_.push_back(ransac_options.data_type_weights_[1]);
     ransac_options.squared_inlier_thresholds_.push_back(ransac_options.squared_inlier_thresholds_[1]);
     ransac_options.data_type_weights_[1] = ransac_options.data_type_weights_[0];
     ransac_options.squared_inlier_thresholds_[1] = ransac_options.squared_inlier_thresholds_[0];
 
-    HybridPoseEstimator solver(x0, x1, depth0, depth1, min_depth, K0, K1, sampson_squared_weight, ransac_options.squared_inlier_thresholds_, est_config);
+    HybridPoseEstimator solver(x0, x1, depth0, depth1, min_depth, K0, K1, sampson_squared_weight,
+                               ransac_options.squared_inlier_thresholds_, est_config);
 
     PoseScaleOffset best_solution;
     ransac_lib::HybridRansacStatistics ransac_stats;
@@ -36,26 +37,27 @@ HybridEstimatePoseScaleOffset(const std::vector<Eigen::Vector2d> &x0, const std:
     return std::make_pair(best_solution, ransac_stats);
 }
 
-std::pair<PoseAndScale, ransac_lib::HybridRansacStatistics> 
+std::pair<PoseAndScale, ransac_lib::HybridRansacStatistics>
 HybridEstimatePoseAndScale(const std::vector<Eigen::Vector2d> &x0, const std::vector<Eigen::Vector2d> &x1,
-                            const std::vector<double> &depth0, const std::vector<double> &depth1, 
-                            const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1,
-                            const ExtendedHybridLORansacOptions& options,
-                            const EstimatorConfig &est_config) {
+                           const std::vector<double> &depth0, const std::vector<double> &depth1,
+                           const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1,
+                           const ExtendedHybridLORansacOptions &options, const EstimatorConfig &est_config) {
     ExtendedHybridLORansacOptions ransac_options(options);
-    
+
     std::random_device rand_dev;
     ransac_options.random_seed_ = 0;
 
     // Change to "three data types"
-    ransac_options.data_type_weights_[1] *= 2 * ransac_options.squared_inlier_thresholds_[0] / ransac_options.squared_inlier_thresholds_[1];
+    ransac_options.data_type_weights_[1] *=
+        2 * ransac_options.squared_inlier_thresholds_[0] / ransac_options.squared_inlier_thresholds_[1];
     double sampson_squared_weight = ransac_options.data_type_weights_[1];
     ransac_options.data_type_weights_.push_back(ransac_options.data_type_weights_[1]);
     ransac_options.squared_inlier_thresholds_.push_back(ransac_options.squared_inlier_thresholds_[1]);
     ransac_options.data_type_weights_[1] = ransac_options.data_type_weights_[0];
     ransac_options.squared_inlier_thresholds_[1] = ransac_options.squared_inlier_thresholds_[0];
 
-    HybridPoseEstimatorScaleOnly solver(x0, x1, depth0, depth1, K0, K1, sampson_squared_weight, ransac_options.squared_inlier_thresholds_, est_config);
+    HybridPoseEstimatorScaleOnly solver(x0, x1, depth0, depth1, K0, K1, sampson_squared_weight,
+                                        ransac_options.squared_inlier_thresholds_, est_config);
 
     PoseAndScale best_solution;
     ransac_lib::HybridRansacStatistics ransac_stats;
@@ -66,8 +68,8 @@ HybridEstimatePoseAndScale(const std::vector<Eigen::Vector2d> &x0, const std::ve
     return std::make_pair(best_solution, ransac_stats);
 }
 
-int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& sample,
-                                       const int solver_idx, std::vector<PoseScaleOffset>* models) const {
+int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>> &sample, const int solver_idx,
+                                       std::vector<PoseScaleOffset> *models) const {
     models->clear();
     if (solver_idx == 0) {
         Eigen::Matrix3d x0 = K0_inv_ * x0_(Eigen::all, sample[0]);
@@ -77,14 +79,14 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
         if (est_config_.use_shift) {
             int num_sols = estimate_scale_shift_pose(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
             for (int i = 0; i < num_sols; i++) {
-                if (!est_config_.min_depth_constraint || (sols[i].offset0 > -min_depth_(0) && sols[i].offset1 > -min_depth_(1) * sols[i].scale)) {
+                if (!est_config_.min_depth_constraint ||
+                    (sols[i].offset0 > -min_depth_(0) && sols[i].offset1 > -min_depth_(1) * sols[i].scale)) {
                     PoseScaleOffset sol = sols[i];
                     sol.offset1 /= sol.scale;
                     models->push_back(sol);
                 }
             }
-        }
-        else {
+        } else {
             Eigen::Matrix3d p0 = x0.array().rowwise() * d0_(sample[0]).transpose().array();
             Eigen::Matrix3d p1 = x1.array().rowwise() * d1_(sample[0]).transpose().array();
             Eigen::Vector3d v0, v1;
@@ -118,8 +120,7 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
 
             models->push_back(PoseScaleOffset(R, t, scale, 0.0, 0.0));
         }
-    }
-    else if (solver_idx == 1) {
+    } else if (solver_idx == 1) {
         Eigen::MatrixXd x0 = K0_inv_ * x0_(Eigen::all, sample[2]);
         Eigen::MatrixXd x1 = K1_inv_ * x1_(Eigen::all, sample[2]);
 
@@ -137,12 +138,12 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
         for (auto &pose : poses) {
             Eigen::Matrix3x4d proj_matrix0 = Eigen::Matrix3x4d::Identity();
             Eigen::Matrix3x4d proj_matrix1 = pose.Rt();
-            
+
             std::vector<Eigen::Vector3d> p3d_vec = TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
             Eigen::MatrixXd p3d(3, p3d_vec.size());
             for (int i = 0; i < p3d_vec.size(); i++) {
                 p3d.col(i) = p3d_vec[i];
-            }  
+            }
 
             if (!est_config_.use_shift) {
                 // Estimate scale by least-squares
@@ -156,8 +157,7 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
 
                 PoseScaleOffset sol(pose.R(), pose.t, scale, 0.0, 0.0);
                 models->push_back(sol);
-            }
-            else {
+            } else {
                 // Estimate scale and shift by least-squares
                 Eigen::MatrixXd A(sample[2].size(), 2);
                 A.col(0) = d0_(sample[2]);
@@ -165,7 +165,8 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
                 Eigen::VectorXd x = (A.transpose() * A).ldlt().solve(A.transpose() * p3d.row(2).transpose());
                 double s0 = x(0);
                 double offset0 = x(1) / s0;
-                if (est_config_.min_depth_constraint && offset0 < -min_depth_(0)) continue;
+                if (est_config_.min_depth_constraint && offset0 < -min_depth_(0))
+                    continue;
 
                 p3d = p3d / s0;
                 pose.t = pose.t / s0;
@@ -175,7 +176,8 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
                 x = (A.transpose() * A).ldlt().solve(A.transpose() * p3d.row(2).transpose());
                 double scale = x(0);
                 double offset1 = x(1) / scale;
-                if (est_config_.min_depth_constraint && offset1 < -min_depth_(1)) continue;
+                if (est_config_.min_depth_constraint && offset1 < -min_depth_(1))
+                    continue;
 
                 PoseScaleOffset sol(pose.R(), pose.t, scale, offset0, offset1);
 
@@ -186,7 +188,8 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
     return models->size();
 }
 
-int HybridPoseEstimator::NonMinimalSolver(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffset* solution) const {
+int HybridPoseEstimator::NonMinimalSolver(const std::vector<std::vector<int>> &sample, const int solver_idx,
+                                          PoseScaleOffset *solution) const {
     if ((sample[0].size() < 3 && sample[1].size() < 3) || sample[2].size() < 5) {
         return 0;
     }
@@ -203,16 +206,16 @@ int HybridPoseEstimator::NonMinimalSolver(const std::vector<std::vector<int>>& s
     config.weight_sampson = sampson_squared_weight_;
     config.min_depth_constraint = est_config_.min_depth_constraint;
     config.use_shift = est_config_.use_shift;
-    HybridPoseOptimizer optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], min_depth_, 
-        *solution, K0_, K1_, config);
+    HybridPoseOptimizer optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], min_depth_, *solution, K0_, K1_,
+                              config);
     optim.SetUp();
-    if (!optim.Solve()) 
+    if (!optim.Solve())
         return 0;
     *solution = optim.GetSolution();
     return 1;
 }
 
-double HybridPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffset& model, int t, int i, bool is_for_inlier) const {
+double HybridPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffset &model, int t, int i, bool is_for_inlier) const {
     if (!is_for_inlier && est_config_.score_type == EstimatorOption::EPI_ONLY && t != 2) {
         return std::numeric_limits<double>::max();
     }
@@ -225,27 +228,25 @@ double HybridPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffset& model, i
         Eigen::Vector3d p2d_project = K1_ * q;
         Eigen::Vector2d p2d = p2d_project.head<2>() / p2d_project(2);
         double z = p2d_project(2);
-        if (z < 1e-2) 
+        if (z < 1e-2)
             return std::numeric_limits<double>::max();
         Eigen::Vector2d x1 = x1_.col(i).head<2>();
         double reproj_error = (p2d - x1).squaredNorm();
 
         return reproj_error;
-    }
-    else if (t == 1) {   
+    } else if (t == 1) {
         Eigen::Vector3d p3d1 = (K1_inv_ * x1_.col(i)) * (d1_(i) + model.offset1) * model.scale;
         Eigen::Vector3d q = model.R().transpose() * p3d1 - model.R().transpose() * model.t();
         Eigen::Vector3d p2d_project = K0_ * q;
         Eigen::Vector2d p2d = p2d_project.head<2>() / p2d_project(2);
         double z = p2d_project(2);
-        if (z < 1e-2) 
+        if (z < 1e-2)
             return std::numeric_limits<double>::max();
         Eigen::Vector2d x0 = x0_.col(i).head<2>();
         double reproj_error = (p2d - x0).squaredNorm();
 
         return reproj_error;
-    }
-    else if (t == 2) {
+    } else if (t == 2) {
         poselib::CameraPose pose(model.R(), model.t());
         Eigen::Vector3d x0_calib = K0_inv_ * x0_.col(i);
         Eigen::Vector3d x1_calib = K1_inv_ * x1_.col(i);
@@ -262,8 +263,9 @@ double HybridPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffset& model, i
     }
 }
 
-// Linear least squares solver. 
-void HybridPoseEstimator::LeastSquares(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseScaleOffset* model) const {
+// Linear least squares solver.
+void HybridPoseEstimator::LeastSquares(const std::vector<std::vector<int>> &sample, const int solver_idx,
+                                       PoseScaleOffset *model) const {
     if ((sample[0].size() < 3 && sample[1].size() < 3) || sample[2].size() < 5) {
         return;
     }
@@ -279,10 +281,10 @@ void HybridPoseEstimator::LeastSquares(const std::vector<std::vector<int>>& samp
     config.min_depth_constraint = est_config_.min_depth_constraint;
     config.use_shift = est_config_.use_shift;
 
-    HybridPoseOptimizer optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], min_depth_, 
-        *model, K0_, K1_, config);
+    HybridPoseOptimizer optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], min_depth_, *model, K0_, K1_,
+                              config);
     optim.SetUp();
-    if (!optim.Solve()) 
+    if (!optim.Solve())
         return;
     *model = optim.GetSolution();
 }
@@ -293,7 +295,8 @@ void HybridPoseEstimator::LeastSquares(const std::vector<std::vector<int>>& samp
 //
 // **************************************************************
 
-int HybridPoseEstimatorScaleOnly::NonMinimalSolver(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseAndScale* solution) const {
+int HybridPoseEstimatorScaleOnly::NonMinimalSolver(const std::vector<std::vector<int>> &sample, const int solver_idx,
+                                                   PoseAndScale *solution) const {
     if ((sample[0].size() < 3 && sample[1].size() < 3) || sample[2].size() < 5) {
         return 0;
     }
@@ -308,27 +311,26 @@ int HybridPoseEstimatorScaleOnly::NonMinimalSolver(const std::vector<std::vector
     if (est_config_.LO_type == EstimatorOption::EPI_ONLY)
         config.use_reprojection = false;
     config.weight_sampson = sampson_squared_weight_;
-    HybridPoseOptimizerScaleOnly optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], 
-        *solution, K0_, K1_, config);
+    HybridPoseOptimizerScaleOnly optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], *solution, K0_, K1_,
+                                       config);
     optim.SetUp();
-    if (!optim.Solve()) 
+    if (!optim.Solve())
         return 0;
     *solution = optim.GetSolution();
     return 1;
 }
 
-int HybridPoseEstimatorScaleOnly::MinimalSolver(const std::vector<std::vector<int>>& sample,
-                                                 const int solver_idx, std::vector<PoseAndScale>* models) const {
+int HybridPoseEstimatorScaleOnly::MinimalSolver(const std::vector<std::vector<int>> &sample, const int solver_idx,
+                                                std::vector<PoseAndScale> *models) const {
     models->clear();
     if (solver_idx == 0) {
         Eigen::Matrix3d x0 = K0_inv_ * x0_(Eigen::all, sample[0]);
         Eigen::Matrix3d x1 = K1_inv_ * x1_(Eigen::all, sample[0]);
 
-        PoseAndScale sol = estimate_scale_and_pose(x0, x1, Eigen::VectorXd::Ones(3));        
+        PoseAndScale sol = estimate_scale_and_pose(x0, x1, Eigen::VectorXd::Ones(3));
         sol.scale = 1.0 / sol.scale; // scale now applies on the second camera
         models->push_back(sol);
-    }
-    else if (solver_idx == 1) {
+    } else if (solver_idx == 1) {
         Eigen::MatrixXd x0 = K0_inv_ * x0_(Eigen::all, sample[2]);
         Eigen::MatrixXd x1 = K1_inv_ * x1_(Eigen::all, sample[2]);
 
@@ -346,12 +348,12 @@ int HybridPoseEstimatorScaleOnly::MinimalSolver(const std::vector<std::vector<in
         for (auto &pose : poses) {
             Eigen::Matrix3x4d proj_matrix0 = Eigen::Matrix3x4d::Identity();
             Eigen::Matrix3x4d proj_matrix1 = pose.Rt();
-            
+
             std::vector<Eigen::Vector3d> p3d_vec = TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
             Eigen::MatrixXd p3d(3, p3d_vec.size());
             for (int i = 0; i < p3d_vec.size(); i++) {
                 p3d.col(i) = p3d_vec[i];
-            }  
+            }
 
             // Estimate scale by least-squares
             double s0 = d0_(sample[2]).dot(p3d.row(2)) / d0_(sample[2]).squaredNorm();
@@ -368,7 +370,8 @@ int HybridPoseEstimatorScaleOnly::MinimalSolver(const std::vector<std::vector<in
     return models->size();
 }
 
-double HybridPoseEstimatorScaleOnly::EvaluateModelOnPoint(const PoseAndScale& model, int t, int i, bool is_for_inlier) const {
+double HybridPoseEstimatorScaleOnly::EvaluateModelOnPoint(const PoseAndScale &model, int t, int i,
+                                                          bool is_for_inlier) const {
     if (!is_for_inlier && est_config_.score_type == EstimatorOption::EPI_ONLY && t != 2) {
         return std::numeric_limits<double>::max();
     }
@@ -387,8 +390,7 @@ double HybridPoseEstimatorScaleOnly::EvaluateModelOnPoint(const PoseAndScale& mo
         double reproj_error = (p2d - x1).squaredNorm();
 
         return reproj_error;
-    }
-    else if (t == 1) {   
+    } else if (t == 1) {
         Eigen::Vector3d p3d1 = (K1_inv_ * x1_.col(i)) * d1_(i) * model.scale;
         Eigen::Vector3d q = model.R().transpose() * p3d1 - model.R().transpose() * model.t();
         Eigen::Vector3d p2d_project = K0_ * q;
@@ -400,8 +402,7 @@ double HybridPoseEstimatorScaleOnly::EvaluateModelOnPoint(const PoseAndScale& mo
         double reproj_error = (p2d - x0).squaredNorm();
 
         return reproj_error;
-    }
-    else if (t == 2) {
+    } else if (t == 2) {
         poselib::CameraPose pose(model.R(), model.t());
         Eigen::Vector3d x0_calib = K0_inv_ * x0_.col(i);
         Eigen::Vector3d x1_calib = K1_inv_ * x1_.col(i);
@@ -418,8 +419,9 @@ double HybridPoseEstimatorScaleOnly::EvaluateModelOnPoint(const PoseAndScale& mo
     }
 }
 
-// Linear least squares solver. 
-void HybridPoseEstimatorScaleOnly::LeastSquares(const std::vector<std::vector<int>>& sample, const int solver_idx, PoseAndScale* model) const {
+// Linear least squares solver.
+void HybridPoseEstimatorScaleOnly::LeastSquares(const std::vector<std::vector<int>> &sample, const int solver_idx,
+                                                PoseAndScale *model) const {
     if ((sample[0].size() < 3 && sample[1].size() < 3) || sample[2].size() < 5) {
         return;
     }
@@ -434,10 +436,9 @@ void HybridPoseEstimatorScaleOnly::LeastSquares(const std::vector<std::vector<in
     if (est_config_.LO_type == EstimatorOption::EPI_ONLY)
         config.use_reprojection = false;
     config.weight_sampson = sampson_squared_weight_;
-    HybridPoseOptimizerScaleOnly optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], 
-        *model, K0_, K1_, config);
+    HybridPoseOptimizerScaleOnly optim(x0_, x1_, d0_, d1_, sample[0], sample[1], sample[2], *model, K0_, K1_, config);
     optim.SetUp();
-    if (!optim.Solve()) 
+    if (!optim.Solve())
         return;
     *model = optim.GetSolution();
 }

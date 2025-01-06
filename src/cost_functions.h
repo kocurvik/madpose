@@ -1,7 +1,7 @@
 #pragma once
 
-#include "utils.h"
 #include "pose.h"
+#include "utils.h"
 
 namespace madpose {
 
@@ -12,17 +12,18 @@ namespace madpose {
 // *******************************************************************
 
 struct LiftProjectionFunctor0 {
-public:
-    LiftProjectionFunctor0(const Eigen::Vector3d &x0_calib, const Eigen::Vector3d &x1, 
-                           const double& x0_depth, const Eigen::Matrix3d &K1) : 
-        x0_calib_(x0_calib), x1_(x1), K1_(K1), x0_depth_(x0_depth) {}
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x0_calib, const Eigen::Vector3d &x1, 
+  public:
+    LiftProjectionFunctor0(const Eigen::Vector3d &x0_calib, const Eigen::Vector3d &x1, const double &x0_depth,
+                           const Eigen::Matrix3d &K1)
+        : x0_calib_(x0_calib), x1_(x1), K1_(K1), x0_depth_(x0_depth) {}
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x0_calib, const Eigen::Vector3d &x1,
                                        const double &x0_depth, const Eigen::Matrix3d &K1) {
-        return (new ceres::AutoDiffCostFunction<LiftProjectionFunctor0, 2, 1, 4, 3>(new LiftProjectionFunctor0(x0_calib, x1, x0_depth, K1)));
+        return (new ceres::AutoDiffCostFunction<LiftProjectionFunctor0, 2, 1, 4, 3>(
+            new LiftProjectionFunctor0(x0_calib, x1, x0_depth, K1)));
     }
 
     template <typename T>
-    bool operator()(const T* const o0, const T* const qvec, const T* const tvec, T* residuals) const {
+    bool operator()(const T *const o0, const T *const qvec, const T *const tvec, T *residuals) const {
         Eigen::Vector<T, 3> x3d = x0_calib_.cast<T>() * (x0_depth_ + o0[0]);
         Eigen::Matrix<T, 3, 3> R = QuaternionToRotationMatrix<T>(Eigen::Map<const Eigen::Vector<T, 4>>(qvec));
         Eigen::Vector<T, 3> t = Eigen::Map<const Eigen::Vector<T, 3>>(tvec);
@@ -35,24 +36,27 @@ public:
 
         return true;
     }
-private:
+
+  private:
     const Eigen::Vector3d x0_calib_, x1_;
     const Eigen::Matrix3d K1_;
     const double x0_depth_;
 };
 
 struct LiftProjectionFunctor1 {
-public:
-    LiftProjectionFunctor1(const Eigen::Vector3d &x1_calib, const Eigen::Vector3d &x0, 
-                           const double& x1_depth, const Eigen::Matrix3d &K0) : 
-        x1_calib_(x1_calib), x0_(x0), K0_(K0), x1_depth_(x1_depth) {}
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x1_calib, const Eigen::Vector3d &x0, 
+  public:
+    LiftProjectionFunctor1(const Eigen::Vector3d &x1_calib, const Eigen::Vector3d &x0, const double &x1_depth,
+                           const Eigen::Matrix3d &K0)
+        : x1_calib_(x1_calib), x0_(x0), K0_(K0), x1_depth_(x1_depth) {}
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x1_calib, const Eigen::Vector3d &x0,
                                        const double &x1_depth, const Eigen::Matrix3d &K0) {
-        return (new ceres::AutoDiffCostFunction<LiftProjectionFunctor1, 2, 1, 1, 4, 3>(new LiftProjectionFunctor1(x1_calib, x0, x1_depth, K0)));
+        return (new ceres::AutoDiffCostFunction<LiftProjectionFunctor1, 2, 1, 1, 4, 3>(
+            new LiftProjectionFunctor1(x1_calib, x0, x1_depth, K0)));
     }
 
     template <typename T>
-    bool operator()(const T* const scale, const T* const o1, const T* const qvec, const T* const tvec, T* residuals) const {
+    bool operator()(const T *const scale, const T *const o1, const T *const qvec, const T *const tvec,
+                    T *residuals) const {
         Eigen::Vector<T, 3> x3d = x1_calib_.cast<T>() * (x1_depth_ + o1[0]) * scale[0];
         Eigen::Matrix<T, 3, 3> R = QuaternionToRotationMatrix<T>(Eigen::Map<const Eigen::Vector<T, 4>>(qvec));
         Eigen::Vector<T, 3> t = Eigen::Map<const Eigen::Vector<T, 3>>(tvec);
@@ -65,25 +69,27 @@ public:
 
         return true;
     }
-private:
+
+  private:
     const Eigen::Vector3d x1_calib_, x0_;
     const Eigen::Matrix3d K0_;
     const double x1_depth_;
 };
 
 struct SampsonErrorFunctor {
-public:
-    SampsonErrorFunctor(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1, 
-                        const double &sq_weight = 1.0) : 
-        x0_(x0), x1_(x1), K0_(K0), K1_(K1), K0_inv_(K0.inverse()), K1_inv_(K1.inverse()), weight_(std::sqrt(sq_weight)) {}
-    
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1, 
-                                       const double &sq_weight = 1.0) {
-        return (new ceres::AutoDiffCostFunction<SampsonErrorFunctor, 1, 4, 3>(new SampsonErrorFunctor(x0, x1, K0, K1, sq_weight)));
+  public:
+    SampsonErrorFunctor(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const Eigen::Matrix3d &K0,
+                        const Eigen::Matrix3d &K1, const double &sq_weight = 1.0)
+        : x0_(x0), x1_(x1), K0_(K0), K1_(K1), K0_inv_(K0.inverse()), K1_inv_(K1.inverse()),
+          weight_(std::sqrt(sq_weight)) {}
+
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const Eigen::Matrix3d &K0,
+                                       const Eigen::Matrix3d &K1, const double &sq_weight = 1.0) {
+        return (new ceres::AutoDiffCostFunction<SampsonErrorFunctor, 1, 4, 3>(
+            new SampsonErrorFunctor(x0, x1, K0, K1, sq_weight)));
     }
 
-    template <typename T>
-    bool operator()(const T* const qvec, const T* const tvec, T* residuals) const {
+    template <typename T> bool operator()(const T *const qvec, const T *const tvec, T *residuals) const {
         Eigen::Matrix<T, 3, 3> R = QuaternionToRotationMatrix<T>(Eigen::Map<const Eigen::Vector<T, 4>>(qvec));
         Eigen::Vector<T, 3> t = Eigen::Map<const Eigen::Vector<T, 3>>(tvec);
 
@@ -93,7 +99,7 @@ public:
 
         Eigen::Matrix<T, 3, 1> x1 = x0_.cast<T>();
         Eigen::Matrix<T, 3, 1> x2 = x1_.cast<T>();
-        
+
         const T Ex1_0 = E(0, 0) * x1(0) + E(0, 1) * x1(1) + E(0, 2);
         const T Ex1_1 = E(1, 0) * x1(0) + E(1, 1) * x1(1) + E(1, 2);
         const T Ex1_2 = E(2, 0) * x1(0) + E(2, 1) * x1(1) + E(2, 2);
@@ -110,7 +116,7 @@ public:
         return true;
     }
 
-private:
+  private:
     const Eigen::Vector3d x0_, x1_;
     const Eigen::Matrix3d K0_, K1_;
     const Eigen::Matrix3d K0_inv_, K1_inv_;
@@ -124,15 +130,17 @@ private:
 // *********************************************************************
 
 struct LiftProjectionSharedFocalFunctor0 {
-public:
-    LiftProjectionSharedFocalFunctor0(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double& x0_depth) : 
-        x0_(x0), x1_(x1), x0_depth_(x0_depth) {}
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &x0_depth) {
-        return (new ceres::AutoDiffCostFunction<LiftProjectionSharedFocalFunctor0, 2, 1, 4, 3, 1>(new LiftProjectionSharedFocalFunctor0(x0, x1, x0_depth)));
+  public:
+    LiftProjectionSharedFocalFunctor0(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &x0_depth)
+        : x0_(x0), x1_(x1), x0_depth_(x0_depth) {}
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &x0_depth) {
+        return (new ceres::AutoDiffCostFunction<LiftProjectionSharedFocalFunctor0, 2, 1, 4, 3, 1>(
+            new LiftProjectionSharedFocalFunctor0(x0, x1, x0_depth)));
     }
 
     template <typename T>
-    bool operator()(const T* const o0, const T* const qvec, const T* const tvec, const T* const focal, T* residuals) const {
+    bool operator()(const T *const o0, const T *const qvec, const T *const tvec, const T *const focal,
+                    T *residuals) const {
         Eigen::Matrix<T, 3, 3> K, K_inv;
         K << focal[0], T(0.0), T(0.0), T(0.0), focal[0], T(0.0), T(0.0), T(0.0), T(1.0);
         K_inv << T(1.0) / focal[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal[0], T(0.0), T(0.0), T(0.0), T(1.0);
@@ -148,21 +156,24 @@ public:
 
         return true;
     }
-private:
+
+  private:
     const Eigen::Vector3d x0_, x1_;
     const double x0_depth_;
 };
 
 struct LiftProjectionSharedFocalFunctor1 {
-public:
-    LiftProjectionSharedFocalFunctor1(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double& x1_depth) : 
-        x1_(x1), x0_(x0), x1_depth_(x1_depth) {}
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double &x1_depth) {
-        return (new ceres::AutoDiffCostFunction<LiftProjectionSharedFocalFunctor1, 2, 1, 1, 4, 3, 1>(new LiftProjectionSharedFocalFunctor1(x1, x0, x1_depth)));
+  public:
+    LiftProjectionSharedFocalFunctor1(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double &x1_depth)
+        : x1_(x1), x0_(x0), x1_depth_(x1_depth) {}
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double &x1_depth) {
+        return (new ceres::AutoDiffCostFunction<LiftProjectionSharedFocalFunctor1, 2, 1, 1, 4, 3, 1>(
+            new LiftProjectionSharedFocalFunctor1(x1, x0, x1_depth)));
     }
 
     template <typename T>
-    bool operator()(const T* const scale, const T* const o1, const T* const qvec, const T* const tvec, const T* const focal, T* residuals) const {
+    bool operator()(const T *const scale, const T *const o1, const T *const qvec, const T *const tvec,
+                    const T *const focal, T *residuals) const {
         Eigen::Matrix<T, 3, 3> K, K_inv;
         K << focal[0], T(0.0), T(0.0), T(0.0), focal[0], T(0.0), T(0.0), T(0.0), T(1.0);
         K_inv << T(1.0) / focal[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal[0], T(0.0), T(0.0), T(0.0), T(1.0);
@@ -178,22 +189,25 @@ public:
 
         return true;
     }
-private:
+
+  private:
     const Eigen::Vector3d x1_, x0_;
     const double x1_depth_;
 };
 
 struct SampsonErrorSharedFocalFunctor {
-public:
-    SampsonErrorSharedFocalFunctor(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &sq_weight = 1.0) : 
-        x0_(x0), x1_(x1), weight_(std::sqrt(sq_weight)) {}
-    
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &sq_weight = 1.0) {
-        return (new ceres::AutoDiffCostFunction<SampsonErrorSharedFocalFunctor, 1, 4, 3, 1>(new SampsonErrorSharedFocalFunctor(x0, x1, sq_weight)));
+  public:
+    SampsonErrorSharedFocalFunctor(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &sq_weight = 1.0)
+        : x0_(x0), x1_(x1), weight_(std::sqrt(sq_weight)) {}
+
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1,
+                                       const double &sq_weight = 1.0) {
+        return (new ceres::AutoDiffCostFunction<SampsonErrorSharedFocalFunctor, 1, 4, 3, 1>(
+            new SampsonErrorSharedFocalFunctor(x0, x1, sq_weight)));
     }
 
     template <typename T>
-    bool operator()(const T* const qvec, const T* const tvec, const T* const focal, T* residuals) const {
+    bool operator()(const T *const qvec, const T *const tvec, const T *const focal, T *residuals) const {
         Eigen::Matrix<T, 3, 3> K_inv;
         K_inv << T(1.0) / focal[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal[0], T(0.0), T(0.0), T(0.0), T(1.0);
         Eigen::Matrix<T, 3, 3> R = QuaternionToRotationMatrix<T>(Eigen::Map<const Eigen::Vector<T, 4>>(qvec));
@@ -206,7 +220,7 @@ public:
 
         Eigen::Matrix<T, 3, 1> x1 = x0_.cast<T>();
         Eigen::Matrix<T, 3, 1> x2 = x1_.cast<T>();
-        
+
         const T Ex1_0 = E(0, 0) * x1(0) + E(0, 1) * x1(1) + E(0, 2);
         const T Ex1_1 = E(1, 0) * x1(0) + E(1, 1) * x1(1) + E(1, 2);
         const T Ex1_2 = E(2, 0) * x1(0) + E(2, 1) * x1(1) + E(2, 2);
@@ -222,7 +236,7 @@ public:
         return true;
     }
 
-private:
+  private:
     const Eigen::Vector3d x0_, x1_;
     const double weight_;
 };
@@ -234,16 +248,17 @@ private:
 // ******************************************************************
 
 struct LiftProjectionTwoFocalFunctor0 {
-public:
-    LiftProjectionTwoFocalFunctor0(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double& x0_depth) : 
-        x0_(x0), x1_(x1), x0_depth_(x0_depth) {}
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &x0_depth) {
-        return (new ceres::AutoDiffCostFunction<LiftProjectionTwoFocalFunctor0, 2, 1, 4, 3, 1, 1>(new LiftProjectionTwoFocalFunctor0(x0, x1, x0_depth)));
+  public:
+    LiftProjectionTwoFocalFunctor0(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &x0_depth)
+        : x0_(x0), x1_(x1), x0_depth_(x0_depth) {}
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &x0_depth) {
+        return (new ceres::AutoDiffCostFunction<LiftProjectionTwoFocalFunctor0, 2, 1, 4, 3, 1, 1>(
+            new LiftProjectionTwoFocalFunctor0(x0, x1, x0_depth)));
     }
 
     template <typename T>
-    bool operator()(const T* const o0, const T* const qvec, const T* const tvec, 
-                    const T* const focal0,  const T* const focal1, T* residuals) const {
+    bool operator()(const T *const o0, const T *const qvec, const T *const tvec, const T *const focal0,
+                    const T *const focal1, T *residuals) const {
         Eigen::Matrix<T, 3, 3> K0_inv, K1;
         K0_inv << T(1.0) / focal0[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal0[0], T(0.0), T(0.0), T(0.0), T(1.0);
         K1 << focal1[0], T(0.0), T(0.0), T(0.0), focal1[0], T(0.0), T(0.0), T(0.0), T(1.0);
@@ -259,22 +274,24 @@ public:
 
         return true;
     }
-private:
+
+  private:
     const Eigen::Vector3d x0_, x1_;
     const double x0_depth_;
 };
 
 struct LiftProjectionTwoFocalFunctor1 {
-public:
-    LiftProjectionTwoFocalFunctor1(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double& x1_depth) : 
-        x1_(x1), x0_(x0), x1_depth_(x1_depth) {}
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double &x1_depth) {
-        return (new ceres::AutoDiffCostFunction<LiftProjectionTwoFocalFunctor1, 2, 1, 1, 4, 3, 1, 1>(new LiftProjectionTwoFocalFunctor1(x1, x0, x1_depth)));
+  public:
+    LiftProjectionTwoFocalFunctor1(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double &x1_depth)
+        : x1_(x1), x0_(x0), x1_depth_(x1_depth) {}
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x1, const Eigen::Vector3d &x0, const double &x1_depth) {
+        return (new ceres::AutoDiffCostFunction<LiftProjectionTwoFocalFunctor1, 2, 1, 1, 4, 3, 1, 1>(
+            new LiftProjectionTwoFocalFunctor1(x1, x0, x1_depth)));
     }
 
     template <typename T>
-    bool operator()(const T* const scale, const T* const o1, const T* const qvec, const T* const tvec, 
-                    const T* const focal0, const T* const focal1, T* residuals) const {
+    bool operator()(const T *const scale, const T *const o1, const T *const qvec, const T *const tvec,
+                    const T *const focal0, const T *const focal1, T *residuals) const {
         Eigen::Matrix<T, 3, 3> K0, K1_inv;
         K0 << focal0[0], T(0.0), T(0.0), T(0.0), focal0[0], T(0.0), T(0.0), T(0.0), T(1.0);
         K1_inv << T(1.0) / focal1[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal1[0], T(0.0), T(0.0), T(0.0), T(1.0);
@@ -290,22 +307,26 @@ public:
 
         return true;
     }
-private:
+
+  private:
     const Eigen::Vector3d x1_, x0_;
     const double x1_depth_;
 };
 
 struct SampsonErrorTwoFocalFunctor {
-public:
-    SampsonErrorTwoFocalFunctor(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &sq_weight = 1.0) : 
-        x0_(x0), x1_(x1), weight_(std::sqrt(sq_weight)) {}
-    
-    static ceres::CostFunction* Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &sq_weight = 1.0) {
-        return (new ceres::AutoDiffCostFunction<SampsonErrorTwoFocalFunctor, 1, 4, 3, 1, 1>(new SampsonErrorTwoFocalFunctor(x0, x1, sq_weight)));
+  public:
+    SampsonErrorTwoFocalFunctor(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1, const double &sq_weight = 1.0)
+        : x0_(x0), x1_(x1), weight_(std::sqrt(sq_weight)) {}
+
+    static ceres::CostFunction *Create(const Eigen::Vector3d &x0, const Eigen::Vector3d &x1,
+                                       const double &sq_weight = 1.0) {
+        return (new ceres::AutoDiffCostFunction<SampsonErrorTwoFocalFunctor, 1, 4, 3, 1, 1>(
+            new SampsonErrorTwoFocalFunctor(x0, x1, sq_weight)));
     }
 
     template <typename T>
-    bool operator()(const T* const qvec, const T* const tvec, const T* const focal0, const T* const focal1, T* residuals) const {
+    bool operator()(const T *const qvec, const T *const tvec, const T *const focal0, const T *const focal1,
+                    T *residuals) const {
         Eigen::Matrix<T, 3, 3> K0_inv, K1_inv;
         K0_inv << T(1.0) / focal0[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal0[0], T(0.0), T(0.0), T(0.0), T(1.0);
         K1_inv << T(1.0) / focal1[0], T(0.0), T(0.0), T(0.0), T(1.0) / focal1[0], T(0.0), T(0.0), T(0.0), T(1.0);
@@ -321,7 +342,7 @@ public:
 
         Eigen::Matrix<T, 3, 1> x1 = x0_.cast<T>();
         Eigen::Matrix<T, 3, 1> x2 = x1_.cast<T>();
-        
+
         const T Ex1_0 = E(0, 0) * x1(0) + E(0, 1) * x1(1) + E(0, 2);
         const T Ex1_1 = E(1, 0) * x1(0) + E(1, 1) * x1(1) + E(1, 2);
         const T Ex1_2 = E(2, 0) * x1(0) + E(2, 1) * x1(1) + E(2, 2);
@@ -337,7 +358,7 @@ public:
         return true;
     }
 
-private:
+  private:
     const Eigen::Vector3d x0_, x1_;
     const double weight_;
 };

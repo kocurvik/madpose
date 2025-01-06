@@ -5,7 +5,7 @@
 namespace madpose {
 
 class OptimizerConfig {
-public:
+  public:
     OptimizerConfig() {
         solver_options.function_tolerance = 1e-6;
         solver_options.gradient_tolerance = 1e-8;
@@ -15,14 +15,11 @@ public:
         solver_options.use_nonmonotonic_steps = true;
         solver_options.num_threads = -1;
         solver_options.logging_type = ceres::SILENT;
-    #if CERES_VERSION_MAJOR < 2
-        solver_options.num_linear_solver_threads = -1;
-    #endif  // CERES_VERSION_MAJOR
         problem_options.loss_function_ownership = ceres::DO_NOT_TAKE_OWNERSHIP;
         problem_options.cost_function_ownership = ceres::TAKE_OWNERSHIP;
     }
 
-    OptimizerConfig(py::dict dict): OptimizerConfig() {
+    OptimizerConfig(py::dict dict) : OptimizerConfig() {
         ASSIGN_PYDICT_ITEM(dict, constant_pose, bool);
         ASSIGN_PYDICT_ITEM(dict, constant_scale, bool);
         ASSIGN_PYDICT_ITEM(dict, constant_offset, bool);
@@ -50,7 +47,7 @@ public:
 };
 
 class SharedFocalOptimizerConfig : public OptimizerConfig {
-public:
+  public:
     SharedFocalOptimizerConfig() : OptimizerConfig() {}
     bool constant_focal = false;
 };
