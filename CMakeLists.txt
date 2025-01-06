@@ -9,8 +9,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -std=c++17 -std=gnu++17 -fPIC") # brute-force approach to make sure we are using C++17
 
 find_package(Eigen3 3.4 REQUIRED)
-find_package(COLMAP REQUIRED)
-message(STATUS "Found COLMAP: ${COLMAP_DIR}")
+find_package(Ceres 2.0.0 REQUIRED)
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
 find_package(PoseLib REQUIRED)
@@ -20,39 +19,19 @@ if(${CERES_VERSION} VERSION_LESS "2.2.0")
     add_definitions("-DCERES_PARAMETERIZATION_ENABLED")
 endif()
 
-if(EIGEN3_FOUND)
-  message("-- Found Eigen version ${EIGEN3_VERSION_STRING}: ${EIGEN3_INCLUDE_DIRS}")
-endif()
-
-if(COLMAP_FOUND)
-  message("-- Found COLMAP version ${COLMAP_VERSION}: ${COLMAP_INCLUDE_DIRS}")
-endif()
-
 add_subdirectory(ext/pybind11)
 
 include_directories(BEFORE
     ${pybind11_INCLUDE_DIR}
     ${EIGEN3_INCLUDE_DIR}
-    # ${COLMAP_INCLUDE_DIRS}
     ${PROJECT_SOURCE_DIR}
     ${OpenCV_INCLUDE_DIRS}
     ext/RansacLib
-)
-include_directories(
-    ${COLMAP_DIR}/../../include
-    ${COLMAP_INCLUDE_DIRS}
 )
 
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
 foreach(dir ${dirs})
   message(STATUS "dir='${dir}'")
 endforeach()
-
-# message(STATUS "COLMAP_INCLUDE_DIRS:${COLMAP_INCLUDE_DIRS}")
-# message(STATUS "COLMAP_LIBRARIES:${COLMAP_LIBRARIES}")
-list(REMOVE_ITEM COLMAP_LIBRARIES colmap_cuda sift_gpu)
-message("COLMAP_LIBRARIES:${COLMAP_LIBRARIES}")
-message("COLMAP_EXPORT_LIBS:${COLMAP_EXPORT_LIBS}")
-link_directories(${COLMAP_LINK_DIRS})
 
 add_subdirectory(src)

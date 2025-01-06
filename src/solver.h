@@ -1,6 +1,5 @@
 #pragma once
 
-#include <colmap/util/types.h>
 #include <PoseLib/solvers/p3p.h>
 
 #include "pose.h"

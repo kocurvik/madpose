@@ -1,10 +1,8 @@
-#include <colmap/geometry/triangulation.h>
 #include <PoseLib/poselib.h>
 #include <PoseLib/solvers/relpose_7pt.h>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/core.hpp>
-#include "solver.h"
 #include "hybrid_pose_two_focal_estimator.h"
 
 namespace madpose {
@@ -151,7 +149,7 @@ int HybridTwoFocalPoseEstimator::MinimalSolver(
             
             Eigen::Matrix3x4d proj_matrix0 = K0 * Eigen::Matrix3x4d::Identity();
             Eigen::Matrix3x4d proj_matrix1 = K1 * sol.pose;
-            std::vector<Eigen::Vector3d> p3d_vec = colmap::TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
+            std::vector<Eigen::Vector3d> p3d_vec = TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
             Eigen::MatrixXd p3d(3, p3d_vec.size());
             for (int i = 0; i < p3d_vec.size(); i++) {
                 p3d.col(i) = p3d_vec[i];

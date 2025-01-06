@@ -18,6 +18,5 @@ target_link_libraries(madpose PRIVATE
     Eigen3::Eigen 
     PoseLib::PoseLib 
     Ceres::ceres 
-    colmap::colmap 
     ${OpenCV_LIBS}
 )

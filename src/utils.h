@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-#include <colmap/util/threading.h>
 #include <ceres/ceres.h>
 #include <Eigen/Core>
 
@@ -11,8 +10,48 @@ if (dict.contains(#key)) key = dict[#key].cast<type>();
 #define ASSIGN_PYDICT_ITEM_TO_MEMBER(obj,dict,key,type) \
   if (dict.contains(#key)) obj.key = dict[#key].cast<type>();
 
+namespace Eigen {
+using Matrix3x4f = Matrix<float, 3, 4>;
+using Matrix3x4d = Matrix<double, 3, 4>;
+}  // namespace Eigen
+
 namespace py = pybind11;
 namespace madpose {
+
+// -------- Triangulation functions from COLMAP 3.9 --------
+inline Eigen::Vector3d TriangulatePoint(const Eigen::Matrix3x4d& cam1_from_world,
+                                 const Eigen::Matrix3x4d& cam2_from_world,
+                                 const Eigen::Vector2d& point1,
+                                 const Eigen::Vector2d& point2) {
+  Eigen::Matrix4d A;
+
+  A.row(0) = point1(0) * cam1_from_world.row(2) - cam1_from_world.row(0);
+  A.row(1) = point1(1) * cam1_from_world.row(2) - cam1_from_world.row(1);
+  A.row(2) = point2(0) * cam2_from_world.row(2) - cam2_from_world.row(0);
+  A.row(3) = point2(1) * cam2_from_world.row(2) - cam2_from_world.row(1);
+
+  Eigen::JacobiSVD<Eigen::Matrix4d> svd(A, Eigen::ComputeFullV);
+
+  return svd.matrixV().col(3).hnormalized();
+}
+
+inline std::vector<Eigen::Vector3d> TriangulatePoints(
+    const Eigen::Matrix3x4d& cam1_from_world,
+    const Eigen::Matrix3x4d& cam2_from_world,
+    const std::vector<Eigen::Vector2d>& points1,
+    const std::vector<Eigen::Vector2d>& points2) {
+  CHECK_EQ(points1.size(), points2.size());
+
+  std::vector<Eigen::Vector3d> points3D(points1.size());
+
+  for (size_t i = 0; i < points3D.size(); ++i) {
+    points3D[i] = TriangulatePoint(
+        cam1_from_world, cam2_from_world, points1[i], points2[i]);
+  }
+
+  return points3D;
+}
+// ---------------------------------------------------------
 
 inline Eigen::Matrix3d to_essential_matrix(Eigen::Matrix3d R, Eigen::Vector3d t) {
     Eigen::Matrix3d E;

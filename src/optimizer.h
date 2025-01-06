@@ -117,10 +117,8 @@ public:
         solver_options.linear_solver_type = ceres::DENSE_QR;
 
         solver_options.num_threads = 1; 
-        // colmap::GetEffectiveNumThreads(solver_options.num_threads);
         #if CERES_VERSION_MAJOR < 2
-        solver_options.num_linear_solver_threads =
-            colmap::GetEffectiveNumThreads(solver_options.num_linear_solver_threads);
+        solver_options.num_linear_solver_threads = 1;
         #endif  // CERES_VERSION_MAJOR
         
         std::string solver_error;
@@ -240,10 +238,8 @@ public:
         solver_options.linear_solver_type = ceres::DENSE_QR;
 
         solver_options.num_threads = 1; 
-        // colmap::GetEffectiveNumThreads(solver_options.num_threads);
         #if CERES_VERSION_MAJOR < 2
-        solver_options.num_linear_solver_threads =
-            colmap::GetEffectiveNumThreads(solver_options.num_linear_solver_threads);
+        solver_options.num_linear_solver_threads = 1;
         #endif  // CERES_VERSION_MAJOR
         
         std::string solver_error;
@@ -365,10 +361,8 @@ public:
         solver_options.linear_solver_type = ceres::DENSE_QR;
 
         solver_options.num_threads = 1; 
-        // colmap::GetEffectiveNumThreads(solver_options.num_threads);
         #if CERES_VERSION_MAJOR < 2
-        solver_options.num_linear_solver_threads =
-            colmap::GetEffectiveNumThreads(solver_options.num_linear_solver_threads);
+        solver_options.num_linear_solver_threads = 1;
         #endif  // CERES_VERSION_MAJOR
 
         std::string solver_error;
@@ -493,10 +487,8 @@ public:
         solver_options.linear_solver_type = ceres::DENSE_QR;
 
         solver_options.num_threads = 1; 
-        // colmap::GetEffectiveNumThreads(solver_options.num_threads);
         #if CERES_VERSION_MAJOR < 2
-        solver_options.num_linear_solver_threads =
-            colmap::GetEffectiveNumThreads(solver_options.num_linear_solver_threads);
+        solver_options.num_linear_solver_threads = 1;
         #endif  // CERES_VERSION_MAJOR
 
         std::string solver_error;

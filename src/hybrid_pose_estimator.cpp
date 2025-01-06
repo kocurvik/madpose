@@ -1,7 +1,5 @@
-#include <colmap/geometry/triangulation.h>
 #include <PoseLib/poselib.h>
 #include <PoseLib/solvers/relpose_5pt.h>
-#include "solver.h"
 #include "hybrid_pose_estimator.h"
 
 namespace madpose {
@@ -140,7 +138,7 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>>& samp
             Eigen::Matrix3x4d proj_matrix0 = Eigen::Matrix3x4d::Identity();
             Eigen::Matrix3x4d proj_matrix1 = pose.Rt();
             
-            std::vector<Eigen::Vector3d> p3d_vec = colmap::TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
+            std::vector<Eigen::Vector3d> p3d_vec = TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
             Eigen::MatrixXd p3d(3, p3d_vec.size());
             for (int i = 0; i < p3d_vec.size(); i++) {
                 p3d.col(i) = p3d_vec[i];
@@ -349,7 +347,7 @@ int HybridPoseEstimatorScaleOnly::MinimalSolver(const std::vector<std::vector<in
             Eigen::Matrix3x4d proj_matrix0 = Eigen::Matrix3x4d::Identity();
             Eigen::Matrix3x4d proj_matrix1 = pose.Rt();
             
-            std::vector<Eigen::Vector3d> p3d_vec = colmap::TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
+            std::vector<Eigen::Vector3d> p3d_vec = TriangulatePoints(proj_matrix0, proj_matrix1, x0_2dvec, x1_2dvec);
             Eigen::MatrixXd p3d(3, p3d_vec.size());
             for (int i = 0; i < p3d_vec.size(); i++) {
                 p3d.col(i) = p3d_vec[i];
