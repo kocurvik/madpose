@@ -37,9 +37,6 @@ std::pair<PoseScaleOffsetTwoFocal, ransac_lib::HybridRansacStatistics> HybridEst
     const Eigen::Vector2d &pp1, const ExtendedHybridLORansacOptions &options, const EstimatorConfig &est_config) {
     ExtendedHybridLORansacOptions ransac_options(options);
 
-    std::random_device rand_dev;
-    ransac_options.random_seed_ = 0;
-
     std::vector<Eigen::Vector2d> x0_norm = x0;
     std::vector<Eigen::Vector2d> x1_norm = x1;
     for (int i = 0; i < x0.size(); i++) {
