@@ -82,9 +82,7 @@ class CMakeBuild(build_ext):
 
             # Multi-config generators have a different way to specify configs
             if not single_config:
-                cmake_args += [
-                    f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"
-                ]
+                cmake_args += [f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{cfg.upper()}={extdir}"]
                 build_args += ["--config", cfg]
 
         if sys.platform.startswith("darwin"):
@@ -95,23 +93,20 @@ class CMakeBuild(build_ext):
 
         # Set CMAKE_BUILD_PARALLEL_LEVEL to control the parallel build level
         # across all generators.
-        if "CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ:
-            # self.parallel is a Python 3 only way to set parallel jobs by hand
-            # using -j in the build_ext call, not supported by pip or PyPA-build.
-            if hasattr(self, "parallel") and self.parallel:
-                # CMake 3.12+ only.
-                build_args += [f"-j{self.parallel}"]
+        # self.parallel is a Python 3 only way to set parallel jobs by hand
+        # using -j in the build_ext call, not supported by pip or PyPA-build.
+        if ("CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ) and (
+            hasattr(self, "parallel") and self.parallel
+        ):
+            # CMake 3.12+ only.
+            build_args += [f"-j{self.parallel}"]
 
         build_temp = Path(self.build_temp) / ext.name
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
 
-        subprocess.run(
-            ["cmake", ext.sourcedir, *cmake_args], cwd=build_temp, check=True
-        )
-        subprocess.run(
-            ["cmake", "--build", ".", *build_args], cwd=build_temp, check=True
-        )
+        subprocess.run(["cmake", ext.sourcedir, *cmake_args], cwd=build_temp, check=True)
+        subprocess.run(["cmake", "--build", ".", *build_args], cwd=build_temp, check=True)
 
 
 # The information here can also be placed in setup.cfg - better separation of
@@ -121,7 +116,7 @@ setup(
     version="0.0.1",
     author="Yifan Yu",
     author_email="markyu98@outlook.com",
-    description='''Solvers and estimators described in the paper "Relative Pose Estimation through Affine Corrections of Monocular Depth Priors".''',
+    description="""Solvers and estimators described in the paper "Relative Pose Estimation through Affine Corrections of Monocular Depth Priors".""",
     long_description="",
     packages=find_packages(),
     ext_modules=[CMakeExtension("madpose")],
