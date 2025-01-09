@@ -108,7 +108,8 @@ See [examples/shared_focal.py](examples/shared_focal.py) for complete example.
 #### Two-focal estimator
 ```python
 pose, stats = madpose.HybridEstimatePoseScaleOffsetTwoFocal(
-                  mkpts0, mkpts1, depth0, depth1,
+                  mkpts0, mkpts1,
+                  depth0, depth1,
                   [depth_map0.min(), depth_map1.min()], 
                   pp0, pp1, options, est_config
               )
