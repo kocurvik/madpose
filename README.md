@@ -62,51 +62,65 @@ est_config.min_depth_constraint = True
 est_config.use_shift = True
 ```
 
-We provide a few sample image pairs in `samples/` to test the hybrid estimators. More demos and evaluations will be added in the future.
+We provide a example image pairs and code snippets in [examples/](examples/) to test the hybrid estimators. More demos and evaluations will be added in the future.
 
 #### Calibrated estimator
 ```python
+pose, stats = madpose.HybridEstimatePoseScaleOffset(
+                  mkpts0, mkpts1, 
+                  depth0, depth1,
+                  [depth_map0.min(), depth_map1.min()], 
+                  K0, K1, options, est_config
+              )
+# rotation and translation of the estimated pose
+R_est, t_est = pose.R(), pose.t()
+# scale and offsets of the affine corrected depth maps
+s_est, o0_est, o1_est = pose.scale, pose.offset0, pose.offset1
 ```
+The parameters are: keypoint matches(`mkpts0`, `mkpts1`), their corresponding depth prior values(`depth0`, `depth1`), min depth values for both views (used when `est_config.min_depth_constraint` is `True`), camera intrinsics(`K0`, `K1`),`options`, and `est_config`.
+
+See [examples/calibrated.py](examples/calibrated.py) for a complete code example, evaluation, and comparison with point-based estimation using PoseLib.
 
 #### Shared-focal estimator
 ```python
+pose, stats = monodepth.HybridEstimatePoseScaleOffsetSharedFocal(
+                  mkpts0, mkpts1, 
+                  depth0, depth1,
+                  [depth_map0.min(), depth_map1.min()], 
+                  pp0, pp1, options, est_config
+              )
+# rotation and translation of the estimated pose
+R_est, t_est = pose.R(), pose.t()
+# scale and offsets of the affine corrected depth maps
+s_est, o0_est, o1_est = pose.scale, pose.offset0, pose.offset1
+# estimated shared focal length
+f_est = pose.focal
 ```
+Different from the calibrated estimator, now instead of intrinsics(`K0`, `K1`), the shared-focal estimator now takes as input the principal points(`pp0`, `pp1`).
+
+See [examples/shared_focal.py](examples/shared_focal.py) for complete example.
 
 #### Two-focal estimator
 ```python
+pose, stats = monodepth.HybridEstimatePoseScaleOffsetTwoFocal(
+                  mkpts0, mkpts1, depth0, depth1,
+                  [depth_map0.min(), depth_map1.min()], 
+                  pp0, pp1, options, est_config
+              )
 ```
+The parameters are same with the shared-focal estimator, but now the estimator will estimate two independent focal lengths.
+
+See [examples/two_focal.py](examples/two_focal.py) for complete example.
 
 #### Point-based baseline
-You can compare with point-based estimators from [PoseLib](https://github.com/PoseLib/PoseLib). You need to install the Poselib's Python bindings. 
+You can compare with point-based estimators from [PoseLib](https://github.com/PoseLib/PoseLib). You need to install the [Poselib's Python bindings](https://github.com/PoseLib/PoseLib?tab=readme-ov-file#python-bindings). 
 
-**Calibrated cameras**:
-```python
-ransac_opt_dict = {'max_epipolar_error': args.epi_pix_thres, 'min_iterations': 1000, 'max_iterations': 10000}
-cam0_dict = {'model': 'PINHOLE', 'width': image0.shape[1], 'height': image0.shape[0], 'params': [K0[0, 0], K0[1, 1], K0[0, 2], K0[1, 2]]}
-cam1_dict = {'model': 'PINHOLE', 'width': image1.shape[1], 'height': image1.shape[0], 'params': [K1[0, 0], K1[1, 1], K1[0, 2], K1[1, 2]]}
-
-pose, stats = poselib.estimate_relative_pose(mkpts0, mkpts1, cam0_dict, cam1_dict, ransac_opt_dict)
-R_ponly, t_ponly = est_pose.R, est_pose.t
-```
-
-**Shared-focal cameras**:
-```python
-pp = (np.array(image0.shape[:2][::-1]) - 1) / 2
-ransac_opt_dict = {'max_epipolar_error': args.epi_pix_thres, 'min_iterations': 1000, 'max_iterations': 10000}
-
-img_pair, stats = poselib.estimate_shared_focal_relative_pose(mkpts0, mkpts1, pp, ransac_opt_dict)
-shared_focal_pose = img_pair.pose
-R_ponly, t_ponly = shared_focal_pose.R, shared_focal_pose.t
-f_ponly = img_pair.camera1.focal()
-```
-
-**Two-focal cameras**
+The corresponding point-based estimation are included in each of the three example scripts above.
 
 ### Solvers
 
 ## TODO List
 
-- [ ] Add example image pairs with depth priors and image correspondences.
 - [ ] Remove dependency on OpenCV.
 - [ ] Setup wheel for PyPI
 - [ ] Add experiment scirpts on datasets
