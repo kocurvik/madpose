@@ -1,6 +1,6 @@
 # MADPose
 
-<a href="https://arxiv.org/abs/"><img src='https://img.shields.io/badge/arXiv-Paper-red?logo=arxiv&logoColor=white' alt='arXiv'></a>
+<!-- <a href="https://arxiv.org/abs/"><img src='https://img.shields.io/badge/arXiv-Paper-red?logo=arxiv&logoColor=white' alt='arXiv'></a> -->
 
 This repo contains the official implementation of the solvers and estimators proposed in the paper "Relative Pose Estimation through Affine Corrections of Monocular Depth Priors". The solvers and estimators are implemented using C++, and we provide easy-to-use Python bindings. 
 
@@ -358,8 +358,8 @@ This codebase is inspired by and built upon many research work and opensource pr
 - [RansacLib](https://github.com/tsattler/RansacLib)
 - [pybind11](https://github.com/pybind/pybind11)
 
-## Citation
+<!-- ## Citation
 If you find our work useful in your research, please consider citing our paper:
 ```
 @misc{}
-```
+``` -->
