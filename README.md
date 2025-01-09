@@ -6,6 +6,179 @@ This repo contains the official implementation of the solvers and estimators pro
 
 Note: "**MAD**" is an acronym for "**M**onocular **A**ffine **D**epth".
 
+## Highlight Results
+We develop three solvers for relative pose estimation that explicitly account for independent affine (scale and shift) ambiguities, tailored for three setups of cameras: calibrated, shared-focal, and unknown focal lengths (two-focal). The solvers are further combined with classic point-based solvers and epipolar constraints in our hybrid RANSAC estimators. Our estimators show consistent improvements across different datasets with different feature matchers and monocular depth estimation models. 
+
+Some highlight results with uncalibrated cameras:
+
+#### Pose Error AUCs on ScanNet-1500 with shared-focal setting
+<table style="border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif; min-width: 600px;">
+    <thead>
+        <tr style="border-bottom: 3px solid #ddd; text-align: center;">
+            <th style="padding: 12px 8px; text-align: center;">Matches</th>
+            <th style="padding: 12px 8px; text-align: center;">Method</th>
+            <th style="padding: 12px 8px; text-align: center;">MD Model</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@5°</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@10°</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@20°</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="2" style="padding: 8px; text-align: center;">SP+SG</td>
+            <td style="padding: 8px;">PoseLib-6pt</td>
+            <td style="padding: 8px; text-align: center;">-</td>
+            <td style="padding: 8px; text-align: center;">12.84</td>
+            <td style="padding: 8px; text-align: center;">28.13</td>
+            <td style="padding: 8px; text-align: center;">45.64</td>
+        </tr>
+        <tr style="border-bottom: 2px solid #eee;">
+            <td style="padding: 8px;">Ours-sf</td>
+            <td style="padding: 8px; text-align: center;">DA-met.</td>
+            <td style="padding: 8px; text-align: center;"><b>18.35</b></td>
+            <td style="padding: 8px; text-align: center;"><b>37.54</b></td>
+            <td style="padding: 8px; text-align: center;"><b>57.58</b></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="2" style="padding: 8px; text-align: center;">RoMa</td>
+            <td style="padding: 8px;">PoseLib-6pt</td>
+            <td style="padding: 8px; text-align: center;">-</td>
+            <td style="padding: 8px; text-align: center;">27.17</td>
+            <td style="padding: 8px; text-align: center;">49.24</td>
+            <td style="padding: 8px; text-align: center;">67.42</td>
+        </tr>
+        <tr style="border-bottom: 2px solid #eee;">
+            <td style="padding: 8px;">Ours-sf</td>
+            <td style="padding: 8px; text-align: center;">DA-met.</td>
+            <td style="padding: 8px; text-align: center;"><b>29.81</b></td>
+            <td style="padding: 8px; text-align: center;"><b>53.11</b></td>
+            <td style="padding: 8px; text-align: center;"><b>71.15</b></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="3" style="padding: 8px; text-align: center;">MASt3R</td>
+            <td style="padding: 8px;">PoseLib-6pt</td>
+            <td style="padding: 8px; text-align: center;">-</td>
+            <td style="padding: 8px; text-align: center;">30.28</td>
+            <td style="padding: 8px; text-align: center;">54.16</td>
+            <td style="padding: 8px; text-align: center;">72.87</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="2" style="padding: 8px;">Ours-sf</td>
+            <td style="padding: 8px; text-align: center;">DA-met.</td>
+            <td style="padding: 8px; text-align: center;"><i>31.87</i></td>
+            <td style="padding: 8px; text-align: center;"><i>56.20</i></td>
+            <td style="padding: 8px; text-align: center;"><i>74.51</i></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px; text-align: center;">MASt3R</td>
+            <td style="padding: 8px; text-align: center;"><b>32.58</b></td>
+            <td style="padding: 8px; text-align: center;"><b>56.99</b></td>
+            <td style="padding: 8px; text-align: center;"><b>74.91</b></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td colspan="3" style="padding: 8px; text-align: center;">Reference entry - DUSt3R</td>
+            <td style="padding: 8px; text-align: center;">25.90</td>
+            <td style="padding: 8px; text-align: center;">48.45</td>
+            <td style="padding: 8px; text-align: center;">68.03</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td colspan="3" style="padding: 8px; text-align: center;">Reference entry - MASt3R</td>
+            <td style="padding: 8px; text-align: center;">23.94</td>
+            <td style="padding: 8px; text-align: center;">46.44</td>
+            <td style="padding: 8px; text-align: center;">66.18</td>
+        </tr>
+    </tbody>
+</table>
+
+#### Pose Error AUCs on 2D-3D-S sampled image pairs with unknown focal lengths
+<table style="border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif; min-width: 700px;">
+    <thead>
+        <tr style="border-bottom: 3px solid #ddd; text-align: center;">
+            <th style="padding: 12px 8px; text-align: center;">Matches</th>
+            <th style="padding: 12px 8px; text-align: center;">Method</th>
+            <th style="padding: 12px 8px; text-align: center;">MD Model</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@2°</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@5°</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@10°</th>
+            <th style="padding: 12px 8px; text-align: center;">AUC@20°</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="2" style="padding: 8px; text-align: center;">SP+LG</td>
+            <td style="padding: 8px;">PoseLib-7pt</td>
+            <td style="padding: 8px; text-align: center;">-</td>
+            <td style="padding: 8px; text-align: center;">5.85</td>
+            <td style="padding: 8px; text-align: center;">13.95</td>
+            <td style="padding: 8px; text-align: center;">21.94</td>
+            <td style="padding: 8px; text-align: center;">30.71</td>
+        </tr>
+        <tr style="border-bottom: 2px solid #eee;">
+            <td style="padding: 8px;">Ours-tf</td>
+            <td style="padding: 8px; text-align: center;">DAv2-met.</td>
+            <td style="padding: 8px; text-align: center;"><b>9.15</b></td>
+            <td style="padding: 8px; text-align: center;"><b>22.22</b></td>
+            <td style="padding: 8px; text-align: center;"><b>32.80</b></td>
+            <td style="padding: 8px; text-align: center;"><b>43.26</b></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="2" style="padding: 8px; text-align: center;">RoMa</td>
+            <td style="padding: 8px;">PoseLib-7pt</td>
+            <td style="padding: 8px; text-align: center;">-</td>
+            <td style="padding: 8px; text-align: center;">8.73</td>
+            <td style="padding: 8px; text-align: center;">20.31</td>
+            <td style="padding: 8px; text-align: center;">30.45</td>
+            <td style="padding: 8px; text-align: center;">41.48</td>
+        </tr>
+        <tr style="border-bottom: 2px solid #eee;">
+            <td style="padding: 8px;">Ours-tf</td>
+            <td style="padding: 8px; text-align: center;">DAv2-met.</td>
+            <td style="padding: 8px; text-align: center;"><b>13.50</b></td>
+            <td style="padding: 8px; text-align: center;"><b>29.19</b></td>
+            <td style="padding: 8px; text-align: center;"><b>42.18</b></td>
+            <td style="padding: 8px; text-align: center;"><b>54.42</b></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="3" style="padding: 8px; text-align: center;">MASt3R</td>
+            <td style="padding: 8px;">PoseLib-7pt</td>
+            <td style="padding: 8px; text-align: center;">-</td>
+            <td style="padding: 8px; text-align: center;">12.58</td>
+            <td style="padding: 8px; text-align: center;">30.27</td>
+            <td style="padding: 8px; text-align: center;">45.57</td>
+            <td style="padding: 8px; text-align: center;">59.85</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td rowspan="2" style="padding: 8px;">Ours-tf</td>
+            <td style="padding: 8px; text-align: center;">DAv2-met.</td>
+            <td style="padding: 8px; text-align: center;"><i>18.05</i></td>
+            <td style="padding: 8px; text-align: center;"><i>39.92</i></td>
+            <td style="padding: 8px; text-align: center;"><i>56.64</i></td>
+            <td style="padding: 8px; text-align: center;"><i>70.86</i></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 8px; text-align: center;">MASt3R</td>
+            <td style="padding: 8px; text-align: center;"><b>22.44</b></td>
+            <td style="padding: 8px; text-align: center;"><b>48.02</b></td>
+            <td style="padding: 8px; text-align: center;"><b>64.79</b></td>
+            <td style="padding: 8px; text-align: center;"><b>76.55</b></td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td colspan="3" style="padding: 8px; text-align: center;">Reference entry - DUSt3R</td>
+            <td style="padding: 8px; text-align: center;">6.43</td>
+            <td style="padding: 8px; text-align: center;">24.47</td>
+            <td style="padding: 8px; text-align: center;">42.39</td>
+            <td style="padding: 8px; text-align: center;">58.36</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+            <td colspan="3" style="padding: 8px; text-align: center;">Reference entry - MASt3R</td>
+            <td style="padding: 8px; text-align: center;">13.39</td>
+            <td style="padding: 8px; text-align: center;">38.41</td>
+            <td style="padding: 8px; text-align: center;">57.92</td>
+            <td style="padding: 8px; text-align: center;">71.91</td>
+        </tr>
+    </tbody>
+</table>
+
 ## Installation
 ### Install from PyPI
 We are working on setting up wheel for easy installation using PyPI. Currently please use the following method to install from source.
