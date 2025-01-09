@@ -62,7 +62,12 @@ est_config.min_depth_constraint = True
 est_config.use_shift = True
 ```
 
-We provide a example image pairs and code snippets in [examples/](examples/) to test the hybrid estimators. More demos and evaluations will be added in the future.
+We provide a example image pairs and code snippets in [examples/](examples/) to test the hybrid estimators. More demos and evaluations will be added in the future. 
+
+We use `numpy` and `cv2` to handle pre-computed data in Python in the examples, you can easily install them using pip:
+```bash
+pip install numpy opencv-python
+```
 
 #### Calibrated estimator
 ```python
@@ -83,7 +88,7 @@ See [examples/calibrated.py](examples/calibrated.py) for a complete code example
 
 #### Shared-focal estimator
 ```python
-pose, stats = monodepth.HybridEstimatePoseScaleOffsetSharedFocal(
+pose, stats = madpose.HybridEstimatePoseScaleOffsetSharedFocal(
                   mkpts0, mkpts1, 
                   depth0, depth1,
                   [depth_map0.min(), depth_map1.min()], 
@@ -102,11 +107,17 @@ See [examples/shared_focal.py](examples/shared_focal.py) for complete example.
 
 #### Two-focal estimator
 ```python
-pose, stats = monodepth.HybridEstimatePoseScaleOffsetTwoFocal(
+pose, stats = madpose.HybridEstimatePoseScaleOffsetTwoFocal(
                   mkpts0, mkpts1, depth0, depth1,
                   [depth_map0.min(), depth_map1.min()], 
                   pp0, pp1, options, est_config
               )
+# rotation and translation of the estimated pose
+R_est, t_est = pose.R(), pose.t()
+# scale and offsets of the affine corrected depth maps
+s_est, o0_est, o1_est = pose.scale, pose.offset0, pose.offset1
+# the estimated two focal lengths
+f0_est, f1_est = pose.focal0, pose.focal1
 ```
 The parameters are same with the shared-focal estimator, but now the estimator will estimate two independent focal lengths.
 
@@ -126,10 +137,11 @@ The corresponding point-based estimation are included in each of the three examp
 - [ ] Add experiment scirpts on datasets
 
 ## Acknowledgement
-Our codebase is inspired by and built upon many research work and opensource projects, we thank the authors and contributors for their work.
+This codebase is inspired by and built upon many research work and opensource projects, we thank the authors and contributors for their work.
 - [PoseLib](https://github.com/PoseLib/PoseLib)
 - [COLMAP](https://github.com/colmap/colmap)
 - [LIMAP](https://github.com/cvg/limap)
+- [SuperGlue](https://github.com/magicleap/SuperGluePretrainedNetwork)
 - [RansacLib](https://github.com/tsattler/RansacLib)
 - [pybind11](https://github.com/pybind/pybind11)
 
