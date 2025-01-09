@@ -143,7 +143,7 @@ def test_solver():
     d2 = (d2_gt - b2_gt) / a2_gt
 
     sols = solve_shift_and_scale_shared_focal(x1, x2, d1, d2)
-    sols_mono = madpose.solve_scale_and_shift_shared_focal(x1.T, x2.T, d1, d2)
+    sols_madpose = madpose.solve_scale_and_shift_shared_focal(x1.T, x2.T, d1, d2)
     posescaleoffsetsfs = madpose.estimate_scale_shift_pose_shared_focal(x1.T, x2.T, d1, d2)
 
     for p in posescaleoffsetsfs:
@@ -163,14 +163,13 @@ def test_solver():
 
         X1 = x1u * d1_corr[:, None]
         X2 = x2u * d2_corr[:, None]
-        print(R_est @ X1.T + t_est[:, None] - X2.T)
 
         err_R = np.linalg.norm(R-R_est)
         err_t = np.linalg.norm(t / np.linalg.norm(t) - t_est / np.linalg.norm(t_est))
         print(f'posescaleoffsetsfs, residual={err_a}, rotation={err_R}, translation={err_t}')
 
-    print(len(sols), len(sols_mono))
-    for k, (a1, b1, a2, b2, f) in enumerate(sols + sols_mono):
+    print(len(sols), len(sols_madpose))
+    for k, (a1, b1, a2, b2, f) in enumerate(sols + sols_madpose):
         err = np.abs(a2 - a2_gt / a1_gt) + np.abs(b1 - b1_gt / a1_gt) + np.abs(b2 - b2_gt / a1_gt) + np.abs(f - f_gt)
         focal_err = np.abs(f - f_gt)
         print(f'focal_err={focal_err}')
