@@ -88,7 +88,7 @@ err_f = np.abs(f_est - f_mean) / f_mean
 
 print("--- Hybrid Estimation Results ---")
 print(f"Rotation Error: {err_R:.4f} degrees")
-print(f"Translation Error: {err_t:.4f} meters")
+print(f"Translation Error: {err_t:.4f} degrees")
 print(f"Focal Error: {(err_f * 100):.2f}%")
 print(f"Estimated scale, offset0, offset1: {s_est:.4f}, {o0_est:.4f}, {o1_est:.4f}")
 
@@ -109,5 +109,5 @@ err_f = np.abs(f_ponly - f_mean) / f_mean
 
 print("--- Point-based Estimation Results ---")
 print(f"Rotation Error: {err_R:.4f} degrees")
-print(f"Translation Error: {err_t:.4f} meters")
+print(f"Translation Error: {err_t:.4f} degrees")
 print(f"Focal Error: {(err_f * 100):.2f}%")
