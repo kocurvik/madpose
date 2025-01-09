@@ -71,7 +71,7 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>> &samp
 
         std::vector<PoseScaleOffset> sols;
         if (est_config_.use_shift) {
-            int num_sols = estimate_scale_shift_pose(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
+            int num_sols = solve_scale_shift_pose(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
             for (int i = 0; i < num_sols; i++) {
                 if (!est_config_.min_depth_constraint ||
                     (sols[i].offset0 > -min_depth_(0) && sols[i].offset1 > -min_depth_(1) * sols[i].scale)) {

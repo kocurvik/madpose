@@ -104,7 +104,7 @@ def test_solver():
 
     sols = solve_shift_and_scale(x1, x2, d1, d2)
     sols_madpose = madpose.solve_scale_and_shift(x1.T, x2.T, d1, d2)
-    posescaleoffsets = madpose.estimate_scale_shift_pose(x1.T, x2.T, d1, d2)
+    posescaleoffsets = madpose.solve_scale_shift_pose(x1.T, x2.T, d1, d2)
     for p in posescaleoffsets:
         R_est, t_est = p.R(), p.t()
         a, b1, b2 = p.scale, p.offset0, p.offset1

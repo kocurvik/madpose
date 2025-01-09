@@ -144,7 +144,7 @@ def test_solver():
 
     sols = solve_shift_and_scale_shared_focal(x1, x2, d1, d2)
     sols_madpose = madpose.solve_scale_and_shift_shared_focal(x1.T, x2.T, d1, d2)
-    posescaleoffsetsfs = madpose.estimate_scale_shift_pose_shared_focal(x1.T, x2.T, d1, d2)
+    posescaleoffsetsfs = madpose.solve_scale_shift_pose_shared_focal(x1.T, x2.T, d1, d2)
 
     for p in posescaleoffsetsfs:
         R_est, t_est = p.R(), p.t()

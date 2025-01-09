@@ -160,11 +160,11 @@ void bind_estimator(py::module &m) {
           "depth_x"_a, "depth_y"_a);
     m.def("solve_scale_and_shift_two_focal", &solve_scale_and_shift_two_focal, "x_homo"_a, "y_homo"_a, "depth_x"_a,
           "depth_y"_a);
-    m.def("estimate_scale_shift_pose", &estimate_scale_shift_pose_wrapper, "x_homo"_a, "y_homo"_a, "depth_x"_a,
+    m.def("solve_scale_shift_pose", &solve_scale_shift_pose_wrapper, "x_homo"_a, "y_homo"_a, "depth_x"_a,
           "depth_y"_a);
-    m.def("estimate_scale_shift_pose_shared_focal", &estimate_scale_shift_pose_shared_focal_wrapper, "x_homo"_a,
+    m.def("solve_scale_shift_pose_shared_focal", &solve_scale_shift_pose_shared_focal_wrapper, "x_homo"_a,
           "y_homo"_a, "depth_x"_a, "depth_y"_a);
-    m.def("estimate_scale_shift_pose_two_focal", &estimate_scale_shift_pose_two_focal_wrapper, "x_homo"_a, "y_homo"_a,
+    m.def("solve_scale_shift_pose_two_focal", &solve_scale_shift_pose_two_focal_wrapper, "x_homo"_a, "y_homo"_a,
           "depth_x"_a, "depth_y"_a);
     m.def("HybridEstimatePoseAndScale", &HybridEstimatePoseAndScale, "x0"_a, "x1"_a, "depth0"_a, "depth1"_a, "K0"_a,
           "K1"_a, "options"_a, "est_config"_a = EstimatorConfig());
