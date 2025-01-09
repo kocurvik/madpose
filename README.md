@@ -9,7 +9,7 @@ Note: "**MAD**" is an acronym for "**M**onocular **A**ffine **D**epth".
 ## Highlight Results
 We develop three solvers for relative pose estimation that explicitly account for independent affine (scale and shift) ambiguities, tailored for three setups of cameras: calibrated, shared-focal, and unknown focal lengths (two-focal). The solvers are further combined with classic point-based solvers and epipolar constraints in our hybrid RANSAC estimators. Our estimators show consistent improvements across different datasets with different feature matchers and monocular depth estimation models. 
 
-Some highlight results with uncalibrated cameras:
+Some highlight results:
 
 #### Pose Error AUCs on ScanNet-1500 with shared-focal setting
 <table style="border-collapse: collapse; margin: 20px 0; font-size: 14px; font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif; min-width: 600px;">
@@ -178,6 +178,7 @@ Some highlight results with uncalibrated cameras:
         </tr>
     </tbody>
 </table>
+Please refer to the paper for more results and discussions.
 
 ## Installation
 ### Install from PyPI
