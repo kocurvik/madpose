@@ -108,8 +108,7 @@ See [examples/shared_focal.py](examples/shared_focal.py) for complete example.
 #### Two-focal estimator
 ```python
 pose, stats = madpose.HybridEstimatePoseScaleOffsetTwoFocal(
-                  mkpts0, mkpts1,
-                  depth0, depth1,
+                  mkpts0, mkpts1, depth0, depth1,
                   [depth_map0.min(), depth_map1.min()], 
                   pp0, pp1, options, est_config
               )
@@ -130,6 +129,41 @@ You can compare with point-based estimators from [PoseLib](https://github.com/Po
 The corresponding point-based estimation are included in each of the three example scripts above.
 
 ### Solvers
+Our hybrid estimators combine our newly proposed depth-aware solvers with the point-based solvers. The Python implementation of the solvers can be found under [solver_py/](solver_py/), which also include calls to the C++ solvers through Python bindings for comparison.
+
+As described in the paper, the proposed solvers all work in a 2-step manner, first solve for the depth scale and shifts (affine parameters) of the depth maps and then recover the pose by finding the rigid transformation between the back-projected points. We provide Python bindings for the first step (solving scale and shifts) as well as combined wrapper for both the pose and the affine parameters.
+
+The bindings for solving the affine parameters:
+```python
+# Calibrated case
+affine_params = madpose.solve_scale_and_shift(x1.T, x2.T, d1, d2) 
+# Shared-focal
+affine_params = madpose.solve_scale_and_shift_shared_focal(x1.T, x2.T, d1, d2)
+# Two-focal
+affine_params = madpose.solve_scale_and_shift_two_focal(x1.T, x2.T, d1, d2)
+```
+The input `x1` and `x2` are `np.array` (or list) of homogeneous normalized image coordinates (`[x, y, 1]`) of the minimal set of $M$ matched keypoints; `d1` and `d2` are `np.array` (or list) of the corresponding depth values. The returned `affine_params` is a list of candidate solutions `(a1, a2, b1, b2)` with `a1` always equal to 1 and therefore `a2, b1, b2` correspond to the scale and shift values $\alpha, \beta_1, \beta_2$.
+
+Or we can use the combined wrapper that solves affine parameters and also recover the candidate poses:
+```python
+# Calibrated case
+poses = madpose.solve_scale_shift_pose(x1.T, x2.T, d1, d2)
+# Shared-focal
+poses = madpose.solve_scale_shift_pose_shared_focal(x1.T, x2.T, d1, d2)
+# Two-focal
+poses = madpose.solve_scale_shift_pose_two_focal(x1.T, x2.T, d1, d2)
+```
+Note that for simplicity the return solutions are all named `poses`, the list contains objects of different classes for the three cases (`madpose.PoseScaleOffset`, `madpose.PoseScaleOffsetSharedFocal`, and `madpose.PoseScaleOffsetTwoFocal`). Retrieve the pose, focal lengths, and affine parameters by:
+```python
+R_est, t_est = pose.R(), pose.t()
+s_est, o0_est, o1_est = pose.scale, pose.offset0, pose.offset1
+
+# for PoseScaleOffsetSharedFocal
+f_est = pose.focal
+
+# for PoseScaleOffsetTwoFocal
+f0_est, f1_est = pose.focal0, pose.focal1
+```
 
 ## TODO List
 
