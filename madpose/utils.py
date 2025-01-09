@@ -1,5 +1,22 @@
 import numpy as np
 
+
+def get_depths(image, depth_map, mkpts):
+    # Calculate the scaling factor between the image and the depth map
+    resize = np.array([depth_map.shape[1] / image.shape[1], depth_map.shape[0] / image.shape[0]])
+
+    # Scale the keypoints to match the depth map's resolution and round to the nearest integer
+    scaled_coords = np.round(mkpts * resize).astype(int)
+
+    # Clip the coordinates to ensure they are within the bounds of the depth map
+    scaled_coords[:, 0] = np.clip(scaled_coords[:, 0], 0, depth_map.shape[1] - 1)
+    scaled_coords[:, 1] = np.clip(scaled_coords[:, 1], 0, depth_map.shape[0] - 1)
+
+    # Perform nearest neighbor query
+    depths = depth_map[scaled_coords[:, 1], scaled_coords[:, 0]]
+    return depths
+
+
 def bougnoux_numpy(F, p1, p2):
     # Convert p1 and p2 to homogeneous coordinates and reshape
     p1 = np.append(p1, 1.0).reshape(3, 1)
