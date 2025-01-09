@@ -6,7 +6,7 @@ This repo contains the official implementation of the solvers and estimators pro
 
 Note: "**MAD**" is an acronym for "**M**onocular **A**ffine **D**epth".
 
-## Highlight Results
+## Evaluation
 We develop three solvers for relative pose estimation that explicitly account for independent affine (scale and shift) ambiguities, tailored for three setups of cameras: calibrated, shared-focal, and unknown focal lengths (two-focal). The solvers are further combined with classic point-based solvers and epipolar constraints in our hybrid RANSAC estimators. Our estimators show consistent improvements across different datasets with different feature matchers and monocular depth estimation models. 
 
 Some highlight results (probably best viewed in light theme on GitHub!):
