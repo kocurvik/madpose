@@ -206,6 +206,8 @@ pip install .
 ```
 If you would like to see the building process (e.g. CMake logs) you can add `-v` option to the above command.
 
+Note: MADPose also depends on [PoseLib](https://github.com/PoseLib/PoseLib). By default, CMake will automatically build PoseLib using `FetchContent`. Set `FETCH_POSELIB` CMake option to `OFF` if you prefer to use a self-installed version.
+
 #### Check the installation
 ```bash
 python -c "import madpose"
