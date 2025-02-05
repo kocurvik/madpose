@@ -182,7 +182,8 @@ int HybridTwoFocalPoseEstimator::NonMinimalSolver(const std::vector<std::vector<
     }
 
     TwoFocalOptimizerConfig config;
-    config.solver_options.max_num_iterations = 25;
+    set_ceres_solver_options(config.solver_options);
+
     config.use_sampson = true;
     config.use_reprojection = true;
     if (est_config_.LO_type == EstimatorOption::MD_ONLY)
@@ -241,7 +242,7 @@ double HybridTwoFocalPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffsetTw
         Eigen::Matrix3d E = to_essential_matrix(model.R(), model.t());
         Eigen::Matrix3d F = K1_inv.transpose() * E * K0_inv;
 
-        double sampson_error = compute_sampson_error(x0_norm_.col(i).head<2>(), x1_norm_.col(i).head<2>(), F);
+        double sampson_error = compute_sampson_error<double>(x0_norm_.col(i).head<2>(), x1_norm_.col(i).head<2>(), F);
         return sampson_error;
     }
 }
@@ -254,16 +255,16 @@ void HybridTwoFocalPoseEstimator::LeastSquares(const std::vector<std::vector<int
     }
 
     TwoFocalOptimizerConfig config;
+    set_ceres_solver_options(config.solver_options);
+
     config.use_sampson = true;
     config.use_reprojection = true;
-
     if (est_config_.LO_type == EstimatorOption::MD_ONLY)
         config.use_sampson = false;
     if (est_config_.LO_type == EstimatorOption::EPI_ONLY)
         config.use_reprojection = false;
     config.weight_sampson = sampson_squared_weight_;
     config.min_depth_constraint = est_config_.min_depth_constraint;
-    config.solver_options.max_num_iterations = 25;
     HybridTwoFocalPoseOptimizer optim(x0_norm_, x1_norm_, d0_, d1_, sample[0], sample[1], sample[2], min_depth_, *model,
                                       config);
     optim.SetUp();

@@ -130,8 +130,10 @@ int HybridSharedFocalPoseEstimator::NonMinimalSolver(const std::vector<std::vect
     if ((sample[0].size() < 4 && sample[1].size() < 4) || sample[2].size() < 6) {
         return 0;
     }
+
     SharedFocalOptimizerConfig config;
-    config.solver_options.max_num_iterations = 25;
+    set_ceres_solver_options(config.solver_options);
+
     config.use_sampson = true;
     config.use_reprojection = true;
     if (est_config_.LO_type == EstimatorOption::MD_ONLY)
@@ -189,7 +191,7 @@ double HybridSharedFocalPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffse
         Eigen::Matrix3d E = to_essential_matrix(model.R(), model.t());
         Eigen::Matrix3d F = K_inv.transpose() * E * K_inv;
 
-        double sampson_error = compute_sampson_error(x0_norm_.col(i).head<2>(), x1_norm_.col(i).head<2>(), F);
+        double sampson_error = compute_sampson_error<double>(x0_norm_.col(i).head<2>(), x1_norm_.col(i).head<2>(), F);
         return sampson_error;
     }
 }
@@ -202,10 +204,10 @@ void HybridSharedFocalPoseEstimator::LeastSquares(const std::vector<std::vector<
     }
 
     SharedFocalOptimizerConfig config;
+    set_ceres_solver_options(config.solver_options);
+
     config.use_sampson = true;
     config.use_reprojection = true;
-    config.solver_options.max_num_iterations = 25;
-
     if (est_config_.LO_type == EstimatorOption::MD_ONLY)
         config.use_sampson = false;
     if (est_config_.LO_type == EstimatorOption::EPI_ONLY)

@@ -69,8 +69,7 @@ class HybridPoseOptimizer {
             for (auto &i : indices_sampson_) {
                 Eigen::Vector3d x0 = K0_inv_ * x0_.col(i);
                 Eigen::Vector3d x1 = K1_inv_ * x1_.col(i);
-                ceres::CostFunction *sampson_cost =
-                    SampsonErrorFunctor::Create(x0, x1, K0_, K1_, config_.weight_sampson);
+                ceres::CostFunction *sampson_cost = SampsonErrorFunctor::Create(x0, x1, weight);
                 problem_->AddResidualBlock(sampson_cost, sampson_loss_func, qvec_.data(), tvec_.data());
             }
         }
@@ -115,7 +114,6 @@ class HybridPoseOptimizer {
         ceres::Solver::Options solver_options = config_.solver_options;
 
         solver_options.linear_solver_type = ceres::DENSE_QR;
-        solver_options.num_threads = 1;
 
         std::string solver_error;
         CHECK(solver_options.IsValid(&solver_error)) << solver_error;
@@ -189,11 +187,12 @@ class HybridPoseOptimizerScaleOnly {
         }
 
         if (config_.use_sampson) {
+            double weight =
+                std::sqrt(config_.weight_sampson) / (1.0 / (K0_(0, 0) + K0_(1, 1)) + 1.0 / (K1_(0, 0) + K1_(1, 1)));
             for (auto &i : indices_sampson_) {
                 Eigen::Vector3d x0 = K0_inv_ * x0_.col(i);
                 Eigen::Vector3d x1 = K1_inv_ * x1_.col(i);
-                ceres::CostFunction *sampson_cost =
-                    SampsonErrorFunctor::Create(x0, x1, K0_, K1_, config_.weight_sampson);
+                ceres::CostFunction *sampson_cost = SampsonErrorFunctor::Create(x0, x1, weight);
                 problem_->AddResidualBlock(sampson_cost, sampson_loss_func, qvec_.data(), tvec_.data());
             }
         }
@@ -229,7 +228,6 @@ class HybridPoseOptimizerScaleOnly {
         ceres::Solver::Options solver_options = config_.solver_options;
 
         solver_options.linear_solver_type = ceres::DENSE_QR;
-        solver_options.num_threads = 1;
 
         std::string solver_error;
         CHECK(solver_options.IsValid(&solver_error)) << solver_error;
@@ -305,10 +303,11 @@ class HybridSharedFocalPoseOptimizer {
             }
         }
 
+        if (config_.use_sampson) {
+            double weight = std::sqrt(config_.weight_sampson);
         for (auto &i : indices_sampson_) {
-            if (config_.use_sampson) {
                 ceres::CostFunction *sampson_cost =
-                    SampsonErrorSharedFocalFunctor::Create(x0_.col(i), x1_.col(i), config_.weight_sampson);
+                    SampsonErrorSharedFocalFunctor::Create(x0_.col(i), x1_.col(i), weight);
                 problem_->AddResidualBlock(sampson_cost, sampson_loss_func, qvec_.data(), tvec_.data(), &focal_);
             }
         }
@@ -353,7 +352,6 @@ class HybridSharedFocalPoseOptimizer {
         ceres::Solver::Options solver_options = config_.solver_options;
 
         solver_options.linear_solver_type = ceres::DENSE_QR;
-        solver_options.num_threads = 1;
 
         std::string solver_error;
         CHECK(solver_options.IsValid(&solver_error)) << solver_error;
@@ -430,10 +428,10 @@ class HybridTwoFocalPoseOptimizer {
             }
         }
 
+        if (config_.use_sampson) {
+            double weight = std::sqrt(config_.weight_sampson);
         for (auto &i : indices_sampson_) {
-            if (config_.use_sampson) {
-                ceres::CostFunction *sampson_cost =
-                    SampsonErrorTwoFocalFunctor::Create(x0_.col(i), x1_.col(i), config_.weight_sampson);
+                ceres::CostFunction *sampson_cost = SampsonErrorTwoFocalFunctor::Create(x0_.col(i), x1_.col(i), weight);
                 problem_->AddResidualBlock(sampson_cost, sampson_loss_func, qvec_.data(), tvec_.data(), &focal0_,
                                            &focal1_);
             }
@@ -484,7 +482,6 @@ class HybridTwoFocalPoseOptimizer {
         ceres::Solver::Options solver_options = config_.solver_options;
 
         solver_options.linear_solver_type = ceres::DENSE_QR;
-        solver_options.num_threads = 1;
 
         std::string solver_error;
         CHECK(solver_options.IsValid(&solver_error)) << solver_error;

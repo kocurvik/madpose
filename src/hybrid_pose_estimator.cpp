@@ -189,7 +189,7 @@ int HybridPoseEstimator::NonMinimalSolver(const std::vector<std::vector<int>> &s
     }
 
     OptimizerConfig config;
-    config.solver_options.max_num_iterations = 25;
+    set_ceres_solver_options(config.solver_options);
 
     config.use_sampson = true;
     config.use_reprojection = true;
@@ -251,9 +251,8 @@ double HybridPoseEstimator::EvaluateModelOnPoint(const PoseScaleOffset &model, i
 
         Eigen::Matrix3d E = to_essential_matrix(model.R(), model.t());
 
-        double sampson_error = compute_sampson_error(x0_calib.head<2>(), x1_calib.head<2>(), E);
-        double loss_scale = 1.0 / (K0_(0, 0) + K0_(1, 1)) + 1.0 / (K1_(0, 0) + K1_(1, 1));
-        return sampson_error / std::pow(loss_scale, 2);
+        double sampson_error = compute_sampson_error<double>(x0_calib.head<2>(), x1_calib.head<2>(), E);
+        return sampson_error * sampson_loss_scale_;
     }
 }
 
@@ -265,6 +264,8 @@ void HybridPoseEstimator::LeastSquares(const std::vector<std::vector<int>> &samp
     }
 
     OptimizerConfig config;
+    set_ceres_solver_options(config.solver_options);
+
     config.use_sampson = true;
     config.use_reprojection = true;
     if (est_config_.LO_type == EstimatorOption::MD_ONLY)
@@ -296,7 +297,7 @@ int HybridPoseEstimatorScaleOnly::NonMinimalSolver(const std::vector<std::vector
     }
 
     OptimizerConfig config;
-    config.solver_options.max_num_iterations = 25;
+    set_ceres_solver_options(config.solver_options);
 
     config.use_sampson = true;
     config.use_reprojection = true;
@@ -407,9 +408,8 @@ double HybridPoseEstimatorScaleOnly::EvaluateModelOnPoint(const PoseAndScale &mo
 
         Eigen::Matrix3d E = to_essential_matrix(model.R(), model.t());
 
-        double sampson_error = compute_sampson_error(x0_calib.head<2>(), x1_calib.head<2>(), E);
-        double loss_scale = 1.0 / (K0_(0, 0) + K0_(1, 1)) + 1.0 / (K1_(0, 0) + K1_(1, 1));
-        return sampson_error / std::pow(loss_scale, 2);
+        double sampson_error = compute_sampson_error<double>(x0_calib.head<2>(), x1_calib.head<2>(), E);
+        return sampson_error * sampson_loss_scale_;
     }
 }
 
@@ -421,10 +421,10 @@ void HybridPoseEstimatorScaleOnly::LeastSquares(const std::vector<std::vector<in
     }
 
     OptimizerConfig config;
+    set_ceres_solver_options(config.solver_options);
+
     config.use_sampson = true;
     config.use_reprojection = true;
-    config.solver_options.max_num_iterations = 25;
-
     if (est_config_.LO_type == EstimatorOption::MD_ONLY)
         config.use_sampson = false;
     if (est_config_.LO_type == EstimatorOption::EPI_ONLY)
