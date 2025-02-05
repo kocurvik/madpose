@@ -305,7 +305,7 @@ class HybridSharedFocalPoseOptimizer {
 
         if (config_.use_sampson) {
             double weight = std::sqrt(config_.weight_sampson);
-        for (auto &i : indices_sampson_) {
+            for (auto &i : indices_sampson_) {
                 ceres::CostFunction *sampson_cost =
                     SampsonErrorSharedFocalFunctor::Create(x0_.col(i), x1_.col(i), weight);
                 problem_->AddResidualBlock(sampson_cost, sampson_loss_func, qvec_.data(), tvec_.data(), &focal_);
@@ -430,7 +430,7 @@ class HybridTwoFocalPoseOptimizer {
 
         if (config_.use_sampson) {
             double weight = std::sqrt(config_.weight_sampson);
-        for (auto &i : indices_sampson_) {
+            for (auto &i : indices_sampson_) {
                 ceres::CostFunction *sampson_cost = SampsonErrorTwoFocalFunctor::Create(x0_.col(i), x1_.col(i), weight);
                 problem_->AddResidualBlock(sampson_cost, sampson_loss_func, qvec_.data(), tvec_.data(), &focal0_,
                                            &focal1_);

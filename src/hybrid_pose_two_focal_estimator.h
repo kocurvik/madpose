@@ -91,7 +91,7 @@ class HybridTwoFocalPoseEstimator {
     std::vector<double> squared_inlier_thresholds_;
     double norm_scale_;
 
-     void set_ceres_solver_options(ceres::Solver::Options &options) const {
+    void set_ceres_solver_options(ceres::Solver::Options &options) const {
         options.function_tolerance = est_config_.ceres_function_tolerance;
         options.gradient_tolerance = est_config_.ceres_gradient_tolerance;
         options.parameter_tolerance = est_config_.ceres_parameter_tolerance;
