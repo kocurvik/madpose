@@ -66,6 +66,8 @@ class HybridPoseOptimizer {
         }
 
         if (config_.use_sampson) {
+            double weight =
+                std::sqrt(config_.weight_sampson) / (1.0 / (K0_(0, 0) + K0_(1, 1)) + 1.0 / (K1_(0, 0) + K1_(1, 1)));
             for (auto &i : indices_sampson_) {
                 Eigen::Vector3d x0 = K0_inv_ * x0_.col(i);
                 Eigen::Vector3d x1 = K1_inv_ * x1_.col(i);
