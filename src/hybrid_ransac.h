@@ -20,6 +20,7 @@ class ExtendedHybridLORansacOptions : public ransac_lib::HybridLORansacOptions {
     // We add this to do non minimal sampling in LO step in align with
     // the original definition of the LO step
     int non_min_sample_multiplier_;
+    bool use_ours = false;
 };
 
 // Our customized hybrid-RANSAC based on HybridLocallyOptimizedMSAC from

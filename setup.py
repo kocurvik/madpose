@@ -95,11 +95,11 @@ class CMakeBuild(build_ext):
         # across all generators.
         # self.parallel is a Python 3 only way to set parallel jobs by hand
         # using -j in the build_ext call, not supported by pip or PyPA-build.
-        if ("CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ) and (
-            hasattr(self, "parallel") and self.parallel
-        ):
+        #if ("CMAKE_BUILD_PARALLEL_LEVEL" not in os.environ) and (
+        #    hasattr(self, "parallel") and self.parallel
+        #):
             # CMake 3.12+ only.
-            build_args += [f"-j{self.parallel}"]
+            # build_args += [f"-j{self.parallel}"]
 
         build_temp = Path(self.build_temp) / ext.name
         if not build_temp.exists():

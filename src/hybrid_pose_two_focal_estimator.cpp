@@ -60,7 +60,7 @@ std::pair<PoseScaleOffsetTwoFocal, ransac_lib::HybridRansacStatistics> HybridEst
     ransac_options.squared_inlier_thresholds_[1] = ransac_options.squared_inlier_thresholds_[0];
 
     HybridTwoFocalPoseEstimator solver(x0_norm, x1_norm, depth0, depth1, min_depth, norm_scale, sampson_squared_weight,
-                                       ransac_options.squared_inlier_thresholds_, est_config);
+                                       ransac_options.squared_inlier_thresholds_, est_config, ransac_options.use_ours);
 
     PoseScaleOffsetTwoFocal best_solution;
     ransac_lib::HybridRansacStatistics ransac_stats;
@@ -82,7 +82,11 @@ int HybridTwoFocalPoseEstimator::MinimalSolver(const std::vector<std::vector<int
         Eigen::Matrix3x4d x1 = x1_norm_(Eigen::all, sample[0]);
 
         std::vector<PoseScaleOffsetTwoFocal> sols;
-        int num_sols = solve_scale_shift_pose_two_focal(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
+        int num_sols;
+        if (use_ours)
+            num_sols = solve_scale_shift_pose_two_focal_ours(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
+        else
+            num_sols = solve_scale_shift_pose_two_focal(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
         for (int i = 0; i < num_sols; i++) {
             if (!est_config_.min_depth_constraint ||
                 (sols[i].offset0 > -min_depth_(0) && sols[i].offset1 > -min_depth_(1) * sols[i].scale)) {
