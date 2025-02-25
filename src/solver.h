@@ -35,6 +35,10 @@ int solve_scale_shift_pose_shared_focal(const Eigen::Matrix3x4d &x_homo, const E
                                         const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
                                         std::vector<PoseScaleOffsetSharedFocal> *output, bool scale_on_x = false);
 
+int solve_scale_shift_pose_shared_focal_ours(const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
+                                             const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
+                                             std::vector<PoseScaleOffsetSharedFocal> *output, bool scale_on_x = false);
+
 int solve_scale_shift_pose_two_focal(const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
                                      const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
                                      std::vector<PoseScaleOffsetTwoFocal> *output, bool scale_on_x = false);

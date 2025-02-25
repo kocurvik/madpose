@@ -16,9 +16,9 @@ class HybridSharedFocalPoseEstimator {
                                    const std::vector<double> &depth1, const Eigen::Vector2d &min_depth,
                                    const double &norm_scale = 1.0, const double &sampson_squared_weight = 1.0,
                                    const std::vector<double> &squared_inlier_thresholds = {},
-                                   const EstimatorConfig &est_config = EstimatorConfig())
+                                   const EstimatorConfig &est_config = EstimatorConfig(), const bool use_ours = false)
         : sampson_squared_weight_(sampson_squared_weight), norm_scale_(norm_scale), min_depth_(min_depth),
-          squared_inlier_thresholds_(squared_inlier_thresholds), est_config_(est_config) {
+          squared_inlier_thresholds_(squared_inlier_thresholds), est_config_(est_config), use_ours(use_ours) {
         assert(x0_norm.size() == x1_norm.size() && x0_norm.size() == depth0.size() && x0_norm.size() == depth1.size());
 
         d0_ = Eigen::Map<const Eigen::VectorXd>(depth0.data(), depth0.size());
@@ -89,6 +89,7 @@ class HybridSharedFocalPoseEstimator {
     double sampson_squared_weight_;
 
     EstimatorConfig est_config_;
+    bool use_ours;
 
     std::vector<double> squared_inlier_thresholds_;
     double norm_scale_;
