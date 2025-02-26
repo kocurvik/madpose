@@ -51,7 +51,7 @@ HybridEstimatePoseAndScale(const std::vector<Eigen::Vector2d> &x0, const std::ve
     ransac_options.squared_inlier_thresholds_[1] = ransac_options.squared_inlier_thresholds_[0];
 
     HybridPoseEstimatorScaleOnly solver(x0, x1, depth0, depth1, K0, K1, sampson_squared_weight,
-                                        ransac_options.squared_inlier_thresholds_, est_config);
+                                        ransac_options.squared_inlier_thresholds_, est_config, options.use_ours);
 
     PoseAndScale best_solution;
     ransac_lib::HybridRansacStatistics ransac_stats;
@@ -71,7 +71,11 @@ int HybridPoseEstimator::MinimalSolver(const std::vector<std::vector<int>> &samp
 
         std::vector<PoseScaleOffset> sols;
         if (est_config_.use_shift) {
-            int num_sols = solve_scale_shift_pose(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
+            int num_sols;
+            if (use_ours)
+                num_sols = solve_scale_shift_pose_ours(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
+            else
+                num_sols = solve_scale_shift_pose(x0, x1, d0_(sample[0]), d1_(sample[0]), &sols, false);
             for (int i = 0; i < num_sols; i++) {
                 if (!est_config_.min_depth_constraint ||
                     (sols[i].offset0 > -min_depth_(0) && sols[i].offset1 > -min_depth_(1) * sols[i].scale)) {

@@ -16,10 +16,10 @@ class HybridPoseEstimator {
                         const Eigen::Vector2d &min_depth, const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1,
                         const double &sampson_squared_weight = 1.0,
                         const std::vector<double> &squared_inlier_thresholds = {},
-                        const EstimatorConfig &est_config = EstimatorConfig())
+                        const EstimatorConfig &est_config = EstimatorConfig(), bool use_ours = false)
         : K0_(K0), K1_(K1), sampson_squared_weight_(sampson_squared_weight), K0_inv_(K0.inverse()),
           K1_inv_(K1.inverse()), min_depth_(min_depth), squared_inlier_thresholds_(squared_inlier_thresholds),
-          est_config_(est_config) {
+          est_config_(est_config), use_ours(use_ours) {
         assert(x0.size() == x1.size() && x0.size() == depth0.size() && x0.size() == depth1.size());
 
         d0_ = Eigen::Map<const Eigen::VectorXd>(depth0.data(), depth0.size());
@@ -94,6 +94,7 @@ class HybridPoseEstimator {
     double sampson_loss_scale_;
 
     EstimatorConfig est_config_;
+    bool use_ours;
     std::vector<double> squared_inlier_thresholds_;
 
     void set_ceres_solver_options(ceres::Solver::Options &options) const {
@@ -113,7 +114,7 @@ class HybridPoseEstimatorScaleOnly {
                                  const Eigen::Matrix3d &K0, const Eigen::Matrix3d &K1,
                                  const double &sampson_squared_weight = 1.0,
                                  const std::vector<double> &squared_inlier_thresholds = {},
-                                 const EstimatorConfig &est_config = EstimatorConfig())
+                                 const EstimatorConfig &est_config = EstimatorConfig(), bool use_ours = false)
         : K0_(K0), K1_(K1), sampson_squared_weight_(sampson_squared_weight), K0_inv_(K0.inverse()),
           K1_inv_(K1.inverse()), squared_inlier_thresholds_(squared_inlier_thresholds), est_config_(est_config) {
         assert(x0.size() == x1.size() && x0.size() == depth0.size() && x0.size() == depth1.size());
