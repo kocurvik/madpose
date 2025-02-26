@@ -23,7 +23,7 @@ HybridEstimatePoseScaleOffset(const std::vector<Eigen::Vector2d> &x0, const std:
     ransac_options.squared_inlier_thresholds_[1] = ransac_options.squared_inlier_thresholds_[0];
 
     HybridPoseEstimator solver(x0, x1, depth0, depth1, min_depth, K0, K1, sampson_squared_weight,
-                               ransac_options.squared_inlier_thresholds_, est_config);
+                               ransac_options.squared_inlier_thresholds_, est_config, options.use_ours);
 
     PoseScaleOffset best_solution;
     ransac_lib::HybridRansacStatistics ransac_stats;
@@ -51,7 +51,7 @@ HybridEstimatePoseAndScale(const std::vector<Eigen::Vector2d> &x0, const std::ve
     ransac_options.squared_inlier_thresholds_[1] = ransac_options.squared_inlier_thresholds_[0];
 
     HybridPoseEstimatorScaleOnly solver(x0, x1, depth0, depth1, K0, K1, sampson_squared_weight,
-                                        ransac_options.squared_inlier_thresholds_, est_config, options.use_ours);
+                                        ransac_options.squared_inlier_thresholds_, est_config);
 
     PoseAndScale best_solution;
     ransac_lib::HybridRansacStatistics ransac_stats;
