@@ -653,6 +653,12 @@ int solve_scale_shift_pose_ours(const Eigen::Matrix3d &x_homo, const Eigen::Matr
         double u = sols(1, k);
         double v = sols(2, k);
 
+        if (depth1[0] + u <= 0 || depth1[1] + u <= 0 || depth1[2] + u <= 0)
+            continue;
+
+        if (depth2[0] + v <= 0 || depth2[1] + v <= 0 || depth2[2] + v <= 0)
+            continue;
+
         Eigen::Vector3d v1 = s * (depth2[0] + v) * x2h[0] - s * (depth2[1] + v) * x2h[1];
         Eigen::Vector3d v2 = s * (depth2[0] + v) * x2h[0] - s * (depth2[2] + v) * x2h[2];
         Eigen::Matrix3d Y;
@@ -667,7 +673,7 @@ int solve_scale_shift_pose_ours(const Eigen::Matrix3d &x_homo, const Eigen::Matr
         Eigen::Matrix3d rot = Y * X;
 
         Eigen::Vector3d t = s * (depth2[0] + v) * x2h[0] - (depth1[0] + u) * rot * x1h[0];
-        output->emplace_back(PoseScaleOffset(rot, t, s, s*v, u));
+        output->emplace_back(PoseScaleOffset(rot, t, s, u, s*v));
         num_sols++;
     }
     return num_sols;
