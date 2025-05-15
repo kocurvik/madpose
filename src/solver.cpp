@@ -1258,9 +1258,9 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     cv::Mat cv_E, cv_R, cv_tr;
     cv::eigen2cv(E, cv_E);
 
-    cv::Mat cv_x0_2dvec(4, 2, CV_64F);
-    cv::Mat cv_x1_2dvec(4, 2, CV_64F);
-    for (int i = 0; i < 4; i++) {
+    cv::Mat cv_x0_2dvec(sample[2].size(), 2, CV_64F);
+    cv::Mat cv_x1_2dvec(sample[2].size(), 2, CV_64F);
+    for (int i = 0; i < sample[2].size(); i++) {
         cv_x0_2dvec.at<double>(i, 0) = x1h[i](0);
         cv_x0_2dvec.at<double>(i, 1) = x1h[i](1);
         cv_x1_2dvec.at<double>(i, 0) = x2h[i](0);
@@ -1270,7 +1270,7 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
 
     cv::cv2eigen(cv_R, R);
     cv::cv2eigen(cv_tr, t);
-    output->emplace_back(PoseScaleOffsetTwoFocal(R, t, 1.0, 0.0, 0.0, f0, f1));
+    output->emplace_back(PoseScaleOffsetTwoFocal sol(R, t, 1.0, 0.0, 0.0, f0, f1));
     return output->size();
 }
 
