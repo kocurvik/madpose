@@ -91,7 +91,8 @@ void bind_ransaclib(py::module &m) {
         .def_readwrite("non_min_sample_multiplier", &ExtendedHybridLORansacOptions::non_min_sample_multiplier_)
         .def_readwrite("lo_starting_iterations", &ExtendedHybridLORansacOptions::lo_starting_iterations_)
         .def_readwrite("final_least_squares", &ExtendedHybridLORansacOptions::final_least_squares_)
-        .def_readwrite("use_ours", &ExtendedHybridLORansacOptions::use_ours);
+        .def_readwrite("use_ours", &ExtendedHybridLORansacOptions::use_ours)
+        .def_readwrite("use_4p4d", &ExtendedHybridLORansacOptions::use_4p4d);
 }
 
 void bind_estimator(py::module &m) {
