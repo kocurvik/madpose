@@ -1178,7 +1178,7 @@ std::pair<double, double> focals_from_fundamental(const Eigen::Matrix3d &F, cons
 }
 
 void motion_from_essential(const Eigen::Matrix3d &E, const std::vector<Eigen::Vector3d> &x1,
-                           const std::vector<Eigen::Vector3d> &x2, CameraPoseVector *relative_poses) {
+                           const std::vector<Eigen::Vector3d> &x2, std::vector<poselib::CameraPose> *relative_poses) {
 
     // Compute the necessary cross products
     Eigen::Vector3d u12 = E.col(0).cross(E.col(1));
