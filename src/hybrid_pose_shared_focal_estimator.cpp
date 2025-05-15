@@ -146,6 +146,7 @@ int HybridSharedFocalPoseEstimator::NonMinimalSolver(const std::vector<std::vect
         config.use_reprojection = false;
     config.weight_sampson = sampson_squared_weight_;
     config.min_depth_constraint = est_config_.min_depth_constraint;
+    config.use_shift = est_config_.use_shift;
     HybridSharedFocalPoseOptimizer optim(x0_norm_, x1_norm_, d0_, d1_, sample[0], sample[1], sample[2], min_depth_,
                                          *solution, config);
     optim.SetUp();
