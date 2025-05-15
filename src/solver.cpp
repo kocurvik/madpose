@@ -1177,6 +1177,74 @@ std::pair<double, double> focals_from_fundamental(const Eigen::Matrix3d &F, cons
     return std::pair<double, double>(std::sqrt(f1(0, 0)), std::sqrt(f2(0, 0)));
 }
 
+void motion_from_essential(const Eigen::Matrix3d &E, const std::vector<Eigen::Vector3d> &x1,
+                           const std::vector<Eigen::Vector3d> &x2, CameraPoseVector *relative_poses) {
+
+    // Compute the necessary cross products
+    Eigen::Vector3d u12 = E.col(0).cross(E.col(1));
+    Eigen::Vector3d u13 = E.col(0).cross(E.col(2));
+    Eigen::Vector3d u23 = E.col(1).cross(E.col(2));
+    const double n12 = u12.squaredNorm();
+    const double n13 = u13.squaredNorm();
+    const double n23 = u23.squaredNorm();
+    Eigen::Matrix3d UW;
+    Eigen::Matrix3d Vt;
+
+    // Compute the U*W factor
+    if (n12 > n13) {
+        if (n12 > n23) {
+            UW.col(1) = E.col(0).normalized();
+            UW.col(2) = u12 / std::sqrt(n12);
+        } else {
+            UW.col(1) = E.col(1).normalized();
+            UW.col(2) = u23 / std::sqrt(n23);
+        }
+    } else {
+        if (n13 > n23) {
+            UW.col(1) = E.col(0).normalized();
+            UW.col(2) = u13 / std::sqrt(n13);
+        } else {
+            UW.col(1) = E.col(1).normalized();
+            UW.col(2) = u23 / std::sqrt(n23);
+        }
+    }
+    UW.col(0) = -UW.col(2).cross(UW.col(1));
+
+    // Compute the V factor
+    Vt.row(0) = UW.col(1).transpose() * E;
+    Vt.row(1) = -UW.col(0).transpose() * E;
+    Vt.row(0).normalize();
+
+    // Here v1 and v2 should be orthogonal. However, if E is not exactly an essential matrix they might not be
+    // To ensure we end up with a rotation matrix we orthogonalize them again here, this should be a nop for good data
+    Vt.row(1) -= Vt.row(0).dot(Vt.row(1)) * Vt.row(0);
+
+    Vt.row(1).normalize();
+    Vt.row(2) = Vt.row(0).cross(Vt.row(1));
+
+    poselib::CameraPose pose;
+    pose.q = rotmat_to_quat(UW * Vt);
+    pose.t = UW.col(2);
+    if (check_cheirality(pose, x1, x2)) {
+        relative_poses->emplace_back(pose);
+    }
+    pose.t = -pose.t;
+    if (check_cheirality(pose, x1, x2)) {
+        relative_poses->emplace_back(pose);
+    }
+
+    // U * W.transpose()
+    UW.block<3, 2>(0, 0) = -UW.block<3, 2>(0, 0);
+    pose.q = rotmat_to_quat(UW * Vt);
+    if (check_cheirality(pose, x1, x2)) {
+        relative_poses->emplace_back(pose);
+    }
+    pose.t = -pose.t;
+    if (check_cheirality(pose, x1, x2)) {
+        relative_poses->emplace_back(pose);
+    }
+}
+
 int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
                                           const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
                                           std::vector<PoseScaleOffsetTwoFocal> *output, bool scale_on_x) {
@@ -1261,8 +1329,7 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     //    std::cout << "Ep: " << x2h[0].transpose() * F * x1h[0] << std::endl;
     //    std::cout << "Det: " << F.determinant() << std::endl;
 
-    std::pair<double, double> focals = poselib::focals_from_fundamental(F, Eigen::Vector2d::Zero(),
-                                                                        Eigen::Vector2d::Zero());
+    std::pair<double, double> focals = focals_from_fundamental(F, Eigen::Vector2d::Zero(), Eigen::Vector2d::Zero());
 
     const double focal1 = focals.first;
     const double focal2 = focals.second;
@@ -1282,7 +1349,7 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     Eigen::Matrix3d E = K2 * F * K1;
 
     std::vector<poselib::CameraPose> poses;
-    poselib::motion_from_essential(E, x1h, x2h, &poses);
+    motion_from_essential(E, x1h, x2h, &poses);
 
     output->reserve(poses.size());
 
