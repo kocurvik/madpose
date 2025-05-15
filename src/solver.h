@@ -51,6 +51,10 @@ int solve_scale_shift_pose_two_focal_ours(const Eigen::Matrix3x4d &x_homo, const
                                           const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
                                           std::vector<PoseScaleOffsetTwoFocal> *output, bool scale_on_x = false);
 
+int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
+                                          const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
+                                          std::vector<PoseScaleOffsetTwoFocal> *output, bool scale_on_x = false);
+
 std::vector<PoseScaleOffset> solve_scale_shift_pose_wrapper(const Eigen::Matrix3d &x_homo,
                                                             const Eigen::Matrix3d &y_homo,
                                                             const Eigen::Vector3d &depth_x,

@@ -16,9 +16,11 @@ class HybridTwoFocalPoseEstimator {
                                 const std::vector<double> &depth1, const Eigen::Vector2d &min_depth,
                                 const double &norm_scale = 1.0, const double &sampson_squared_weight = 1.0,
                                 const std::vector<double> &squared_inlier_thresholds = {},
-                                const EstimatorConfig &est_config = EstimatorConfig(), const bool use_ours = false)
+                                const EstimatorConfig &est_config = EstimatorConfig(), const bool use_ours = false,
+                                const bool use_4p4d = false)
         : sampson_squared_weight_(sampson_squared_weight), norm_scale_(norm_scale), min_depth_(min_depth),
-          squared_inlier_thresholds_(squared_inlier_thresholds), est_config_(est_config), use_ours(use_ours) {
+          squared_inlier_thresholds_(squared_inlier_thresholds), est_config_(est_config), use_ours(use_ours),
+          use_4p4d(use_4p4d) {
         assert(x0_norm.size() == x1_norm.size() && x0_norm.size() == depth0.size() && x0_norm.size() == depth1.size());
 
         d0_ = Eigen::Map<const Eigen::VectorXd>(depth0.data(), depth0.size());
@@ -90,7 +92,7 @@ class HybridTwoFocalPoseEstimator {
     EstimatorConfig est_config_;
     std::vector<double> squared_inlier_thresholds_;
     double norm_scale_;
-    bool use_ours;
+    bool use_ours, use_4p4d;
 
     void set_ceres_solver_options(ceres::Solver::Options &options) const {
         options.function_tolerance = est_config_.ceres_function_tolerance;

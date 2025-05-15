@@ -21,6 +21,7 @@ class ExtendedHybridLORansacOptions : public ransac_lib::HybridLORansacOptions {
     // the original definition of the LO step
     int non_min_sample_multiplier_;
     bool use_ours = false;
+    bool use_4p4d = false;
 };
 
 // Our customized hybrid-RANSAC based on HybridLocallyOptimizedMSAC from

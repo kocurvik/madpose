@@ -1152,6 +1152,145 @@ int solve_scale_shift_pose_two_focal_ours(const Eigen::Matrix3x4d &x_homo, const
     return 0;
 }
 
+std::pair<double, double> focals_from_fundamental(const Eigen::Matrix3d &F, const Eigen::Vector2d &pp1,
+                                                  const Eigen::Vector2d &pp2) {
+    Eigen::Vector3d p1 = pp1.homogeneous();
+    Eigen::Vector3d p2 = pp2.homogeneous();
+
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
+
+    Eigen::Vector3d e1 = svd.matrixV().col(2);
+    Eigen::Vector3d e2 = svd.matrixU().col(2);
+
+    Eigen::DiagonalMatrix<double, 3> II(1.0, 1.0, 0.0);
+
+    Eigen::Matrix3d s_e1, s_e2;
+    s_e1 << 0, -e1(2), e1(1), e1(2), 0, -e1(0), -e1(1), e1(0), 0;
+    s_e2 << 0, -e2(2), e2(1), e2(2), 0, -e2(0), -e2(1), e2(0), 0;
+
+    Eigen::MatrixXd f1 = (-p2.transpose() * s_e2 * II * F * (p1 * p1.transpose()) * F.transpose() * p2) /
+                         (p2.transpose() * s_e2 * II * F * II * F.transpose() * p2);
+
+    Eigen::MatrixXd f2 = (-p1.transpose() * s_e1 * II * F.transpose() * (p2 * p2.transpose()) * F * p1) /
+                         (p1.transpose() * s_e1 * II * F.transpose() * II * F * p1);
+
+    return std::pair<double, double>(std::sqrt(f1(0, 0)), std::sqrt(f2(0, 0)));
+}
+
+int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
+                                          const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
+                                          std::vector<PoseScaleOffsetTwoFocal> *output, bool scale_on_x) {
+    output->clear();
+    output->reserve(1);
+    std::vector<Eigen::Vector3d> x1h(4);
+    std::vector<Eigen::Vector3d> x2h(4);
+    for (int i = 0; i < 4; ++i) {
+        x1h[i] = x_homo.col(i);
+        x2h[i] = y_homo.col(i);
+    }
+
+    std::vector<Eigen::Vector2d> sigma(4);
+    for (int i = 0; i < 4; ++i) {
+        sigma[i](0) = depth_x[i];
+        sigma[i](1) = depth_y[i];
+    }
+
+    Eigen::MatrixXd coefficients(12, 12);
+    int i;
+
+    // Form a linear system: i-th row of A(=a) represents
+    // the equation: (m2[i], 1)'*F*(m1[i], 1) = 0
+    size_t row = 0;
+    for (i = 0; i < 4; i++)
+    {
+        double u11 = x1[i](0), v11 = x1[i](1), u12 = x2[i](0), v12 = x2[i](1);
+        double q1 = sigma[i](0), q2 = sigma[i](1);
+        double q = q2 / q1;
+
+        coefficients(row, 0) = -u11;
+        coefficients(row, 1) = -v11;
+        coefficients(row, 2) = -1;
+        coefficients(row, 3) = 0;
+        coefficients(row, 4) = 0;
+        coefficients(row, 5) = 0;
+        coefficients(row, 6) = 0;
+        coefficients(row, 7) = 0;
+        coefficients(row, 8) = 0;
+        coefficients(row, 9) = 0;
+        coefficients(row, 10) = q;
+        coefficients(row, 11) = -q * v12;
+        ++row;
+
+        coefficients(row, 0) = 0;
+        coefficients(row, 1) = 0;
+        coefficients(row, 2) = 0;
+        coefficients(row, 3) = -u11;
+        coefficients(row, 4) = -v11;
+        coefficients(row, 5) = -1;
+        coefficients(row, 6) = 0;
+        coefficients(row, 7) = 0;
+        coefficients(row, 8) = 0;
+        coefficients(row, 9) = -q;
+        coefficients(row, 10) = 0;
+        coefficients(row, 11) = q * u12;
+        ++row;
+
+        if (i == 3)
+            break;
+
+        coefficients(row, 0) = 0;
+        coefficients(row, 1) = 0;
+        coefficients(row, 2) = 0;
+        coefficients(row, 3) = 0;
+        coefficients(row, 4) = 0;
+        coefficients(row, 5) = 0;
+        coefficients(row, 6) = -u11;
+        coefficients(row, 7) = -v11;
+        coefficients(row, 8) = -1;
+        coefficients(row, 9) = q * v12;
+        coefficients(row, 10) = -q * u12;
+        coefficients(row, 11) = 0;
+        ++row;
+    }
+
+    Eigen::Matrix<double, 12, 1> f1 = coefficients.block<11, 11>(0, 0).partialPivLu().solve(-coefficients.block<11, 1>(0, 11)).homogeneous();
+
+    Eigen::Matrix3d F;
+    F << f1[0], f1[1], f1[2], f1[3], f1[4], f1[5], f1[6], f1[7], f1[8];
+
+    //    std::cout << "F: " << std::endl << F << std::endl;
+    //    std::cout << "Ep: " << x2h[0].transpose() * F * x1h[0] << std::endl;
+    //    std::cout << "Det: " << F.determinant() << std::endl;
+
+    std::pair<Camera, Camera> focals = focals_from_fundamental(F, Eigen::Vector2d::Zero(), Eigen::Vector2d::Zero());
+
+    const double focal1 = focals.first;
+    const double focal2 = focals.second;
+
+    if (std::isnan(focal1))
+        return;
+    if (std::isnan(focal2))
+        return;
+
+    //    if (focal1 < opt.max_focal_1 or focal1 > opt.max_focal_1 or
+    //        focal2 < opt.min_focal_2 or focal2 > opt.max_focal_2)
+    //        return;
+
+    Eigen::DiagonalMatrix<double, 3> K1(focal1, focal1, 1.0);
+    Eigen::DiagonalMatrix<double, 3> K2(focal2, focal2, 1.0);
+
+    Eigen::Matrix3d E = K2 * F * K1;
+
+    std::vector<poselib::CameraPose> poses;
+    poselib::motion_from_essential(E, x1h, x2h, &poses);
+
+    models->reserve(poses.size());
+
+    for (const poselib::CameraPose& pose : poses){
+        output->emplace_back(PoseScaleOffsetTwoFocal(pose.R(), pose.t, 1.0, 0.0, 0.0, focal1, focal2));
+    }
+}
+
 std::vector<PoseScaleOffset> solve_scale_shift_pose_wrapper(const Eigen::Matrix3d &x_homo,
                                                             const Eigen::Matrix3d &y_homo,
                                                             const Eigen::Vector3d &depth_x,
