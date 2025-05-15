@@ -1177,6 +1177,14 @@ std::pair<double, double> focals_from_fundamental(const Eigen::Matrix3d &F, cons
     return std::pair<double, double>(std::sqrt(f1(0, 0)), std::sqrt(f2(0, 0)));
 }
 
+inline Eigen::Vector4d rotmat_to_quat(const Eigen::Matrix3d &R) {
+    Eigen::Quaterniond q_flip(R);
+    Eigen::Vector4d q;
+    q << q_flip.w(), q_flip.x(), q_flip.y(), q_flip.z();
+    q.normalize();
+    return q;
+}
+
 void motion_from_essential(const Eigen::Matrix3d &E, const std::vector<Eigen::Vector3d> &x1,
                            const std::vector<Eigen::Vector3d> &x2, std::vector<poselib::CameraPose> *relative_poses) {
 
