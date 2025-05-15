@@ -1259,7 +1259,7 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     std::vector<poselib::CameraPose> poses;
     poselib::motion_from_essential(E, x1h, x2h, &poses);
 
-    models->reserve(poses.size());
+    output->reserve(poses.size());
 
     for (const poselib::CameraPose& pose : poses){
         output->emplace_back(PoseScaleOffsetTwoFocal(pose.R(), pose.t, 1.0, 0.0, 0.0, focal1, focal2));
