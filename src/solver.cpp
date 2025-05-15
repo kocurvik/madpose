@@ -1185,18 +1185,16 @@ inline Eigen::Vector4d rotmat_to_quat(const Eigen::Matrix3d &R) {
     return q;
 }
 
-bool check_cheirality(const poselib::CameraPose &pose, const Eigen::Vector3d &p1, const Eigen::Vector3d &x1,
-                      const Eigen::Vector3d &p2, const Eigen::Vector3d &x2, double min_depth) {
-
+bool check_cheirality(const CameraPose &pose, const Eigen::Vector3d &x1, const Eigen::Vector3d &x2, double min_depth) {
     // This code assumes that x1 and x2 are unit vectors
     const Eigen::Vector3d Rx1 = pose.rotate(x1);
 
     // [1 a; a 1] * [lambda1; lambda2] = [b1; b2]
     // [lambda1; lambda2] = [1 -a; -a 1] * [b1; b2] / (1 - a*a)
-    const Eigen::Vector3d rhs = pose.t + pose.rotate(p1) - p2;
+
     const double a = -Rx1.dot(x2);
-    const double b1 = -Rx1.dot(rhs);
-    const double b2 = x2.dot(rhs);
+    const double b1 = -Rx1.dot(pose.t);
+    const double b2 = x2.dot(pose.t);
 
     // Note that we drop the factor 1.0/(1-a*a) since it is always positive.
     const double lambda1 = b1 - a * b2;
@@ -1291,9 +1289,16 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     output->clear();
     std::vector<Eigen::Vector3d> x1h(4);
     std::vector<Eigen::Vector3d> x2h(4);
+
+
+    std::vector<Eigen::Vector2d> x1(4);
+    std::vector<Eigen::Vector2d> x2(4);
+
     for (int i = 0; i < 4; ++i) {
-        x1h[i] = x_homo.col(i);
-        x2h[i] = y_homo.col(i);
+        x1[i] = x_homo.col(i).hnormalized();
+        x2[i] = y_homo.col(i).hnormalized();
+        x1h[i] = x_homo.col(i).normalized();
+        x2h[i] = y_homo.col(i).normalized();
     }
 
     std::vector<Eigen::Vector2d> sigma(4);
@@ -1310,7 +1315,7 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     size_t row = 0;
     for (i = 0; i < 4; i++)
     {
-        double u11 = x1h[i](0), v11 = x1h[i](1), u12 = x2h[i](0), v12 = x2h[i](1);
+        double u11 = x1[i](0), v11 = x1[i](1), u12 = x2[i](0), v12 = x2[i](1);
         double q1 = sigma[i](0), q2 = sigma[i](1);
         double q = q2 / q1;
 
