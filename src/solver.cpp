@@ -1152,36 +1152,10 @@ int solve_scale_shift_pose_two_focal_ours(const Eigen::Matrix3x4d &x_homo, const
     return 0;
 }
 
-std::pair<double, double> focals_from_fundamental(const Eigen::Matrix3d &F, const Eigen::Vector2d &pp1,
-                                                  const Eigen::Vector2d &pp2) {
-    Eigen::Vector3d p1 = pp1.homogeneous();
-    Eigen::Vector3d p2 = pp2.homogeneous();
-
-    Eigen::JacobiSVD<Eigen::Matrix3d> svd(F, Eigen::ComputeFullU | Eigen::ComputeFullV);
-
-    Eigen::Vector3d e1 = svd.matrixV().col(2);
-    Eigen::Vector3d e2 = svd.matrixU().col(2);
-
-    Eigen::DiagonalMatrix<double, 3> II(1.0, 1.0, 0.0);
-
-    Eigen::Matrix3d s_e1, s_e2;
-    s_e1 << 0, -e1(2), e1(1), e1(2), 0, -e1(0), -e1(1), e1(0), 0;
-    s_e2 << 0, -e2(2), e2(1), e2(2), 0, -e2(0), -e2(1), e2(0), 0;
-
-    Eigen::MatrixXd f1 = (-p2.transpose() * s_e2 * II * F * (p1 * p1.transpose()) * F.transpose() * p2) /
-                         (p2.transpose() * s_e2 * II * F * II * F.transpose() * p2);
-
-    Eigen::MatrixXd f2 = (-p1.transpose() * s_e1 * II * F.transpose() * (p2 * p2.transpose()) * F * p1) /
-                         (p1.transpose() * s_e1 * II * F.transpose() * II * F * p1);
-
-    return std::pair<double, double>(std::sqrt(f1(0, 0)), std::sqrt(f2(0, 0)));
-}
-
 int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const Eigen::Matrix3x4d &y_homo,
                                           const Eigen::Vector4d &depth_x, const Eigen::Vector4d &depth_y,
                                           std::vector<PoseScaleOffsetTwoFocal> *output, bool scale_on_x) {
     output->clear();
-    output->reserve(1);
     std::vector<Eigen::Vector3d> x1h(4);
     std::vector<Eigen::Vector3d> x2h(4);
     for (int i = 0; i < 4; ++i) {
@@ -1262,15 +1236,16 @@ int solve_scale_shift_pose_two_focal_4p4d(const Eigen::Matrix3x4d &x_homo, const
     //    std::cout << "Ep: " << x2h[0].transpose() * F * x1h[0] << std::endl;
     //    std::cout << "Det: " << F.determinant() << std::endl;
 
-    std::pair<Camera, Camera> focals = focals_from_fundamental(F, Eigen::Vector2d::Zero(), Eigen::Vector2d::Zero());
+    std::pair<poselib::Camera, poselib::Camera> focals = poselib::focals_from_fundamental(F, Eigen::Vector2d::Zero(),
+                                                                                          Eigen::Vector2d::Zero());
 
-    const double focal1 = focals.first;
-    const double focal2 = focals.second;
+    const double focal1 = focals.first.focal();
+    const double focal2 = focals.second.focal();
 
     if (std::isnan(focal1))
-        return;
+        return 0;
     if (std::isnan(focal2))
-        return;
+        return 0;
 
     //    if (focal1 < opt.max_focal_1 or focal1 > opt.max_focal_1 or
     //        focal2 < opt.min_focal_2 or focal2 > opt.max_focal_2)
