@@ -1185,7 +1185,8 @@ inline Eigen::Vector4d rotmat_to_quat(const Eigen::Matrix3d &R) {
     return q;
 }
 
-bool check_cheirality(const CameraPose &pose, const Eigen::Vector3d &x1, const Eigen::Vector3d &x2, double min_depth) {
+bool check_cheirality(const poselib::CameraPose &pose, const Eigen::Vector3d &x1, const Eigen::Vector3d &x2,
+                      double min_depth) {
     // This code assumes that x1 and x2 are unit vectors
     const Eigen::Vector3d Rx1 = pose.rotate(x1);
 
